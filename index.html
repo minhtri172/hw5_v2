@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Scrabble Game</title>
+    <link href="css/hw5.css" rel="stylesheet">
+    <link href="https://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="board"></div>
+        <div id="remain">
+            <div id="display">
+                <p id="myString">Word:</p>
+                <p id="score">Score: 0</p>
+                <p id="totalScore">Total Score: 0</p>
+            </div>
+            <div id="save">
+            </div>
+            <div id="error-message">
+                <p></p>
+                <button id="btnRule">Click here to see the rules</button>
+            </div>
+            <div id="exchangeTiles">Drop here to exchange tiles.</div>
+        </div>
+        <div id="holder"></div>
+        <div id="control">
+            <button id="btnReset">Reset Tiles</button>
+            <button id="btnSave">Save Word</button>
+            <button id="btnStartOver">Start Over</button>
+        </div>
+        <div id="dialog-message"></div>
+        <div id="dialog-direction">
+            <ul id='select-direction'>
+                <li data-name='leftRight'><img src='./images/left-right.png'></li>
+                <li data-name='upDown'><img src='./images/up-down.png'></li>
+            </ul>
+        </div>
+        <div id="dialog-confirm">
+            <p>Do you want to start over the game?</p>
+        </div>
+        <div id="dialog-rules">
+            <ol>
+                <li>The first tile need to be at star icon to start the game.</li>
+                <li>You need to make a valid English Word to get score.</li>
+                <li>Each tile has a specific score at bottom right.</li>
+                <li>If you draw space tile, you can pick any letter you want.</li>
+                <li>You can earn double score of a letter if you place your tiles on "double letter scores".</li>
+                <li>You can earn triple score of a letter if you place your tiles on "triple letter scores".</li>
+                <li>You can earn double score of a word if you place your tiles on "double word scores".</li>
+                <li>You can earn triple score of a word if you place your tiles on "triple word scores".</li>
+                <li>When a tile place on the board, it cannot be moved.</li>
+                <li>Do not allow a space between two letters of a word.</li>
+                <li>You can earn +50 bonus point if you get a word with 7 letters.</li>
+                <li>The game finish if there is no tiles remaining.</li>
+                <li>Click "Save Word" to save your word when you done.</li>
+                <li>You can use the letter of the saved words to make new words.</li>
+                <li>Click "Reset Tiles" to call back letter on the board.</li>
+                <li>Click "Start Over" to start the game again.</li>
+            </ol>
+            <p>Example:</p>
+            <img id="example" src="./images/example.PNG">
+        </div>
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.js"
+        integrity="sha256-xH4q8N0pEzrZMaRmd7gQVcTZiFei+HfRTBPJ1OGXC0k=" crossorigin="anonymous"></script>
+    <script src="js/hw5.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1664 @@
+/*
+    File: hw5.js
+    GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
+    Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
+    Copyright (C) 2021 by Minh Le. 
+    Updated by ML on November 7, 2021 at 7:00pm
+*/
+
+$(document).ready(function () {
+  // GLOBAL VARIABLES HERE
+  // Tiles ditribution
+  var ScrabbleTiles = [];
+  ScrabbleTiles["A"] = { "value": 1, "distribution": 9, "remaining": 9 };
+  ScrabbleTiles["B"] = { "value": 3, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["C"] = { "value": 3, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["D"] = { "value": 2, "distribution": 4, "remaining": 4 };
+  ScrabbleTiles["E"] = { "value": 1, "distribution": 12, "remaining": 12 };
+  ScrabbleTiles["F"] = { "value": 4, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["G"] = { "value": 2, "distribution": 3, "remaining": 3 };
+  ScrabbleTiles["H"] = { "value": 4, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["I"] = { "value": 1, "distribution": 9, "remaining": 9 };
+  ScrabbleTiles["J"] = { "value": 8, "distribution": 1, "remaining": 1 };
+  ScrabbleTiles["K"] = { "value": 5, "distribution": 1, "remaining": 1 };
+  ScrabbleTiles["L"] = { "value": 1, "distribution": 4, "remaining": 4 };
+  ScrabbleTiles["M"] = { "value": 3, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["N"] = { "value": 1, "distribution": 6, "remaining": 6 };
+  ScrabbleTiles["O"] = { "value": 1, "distribution": 8, "remaining": 8 };
+  ScrabbleTiles["P"] = { "value": 3, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["Q"] = { "value": 10, "distribution": 1, "remaining": 1 };
+  ScrabbleTiles["R"] = { "value": 1, "distribution": 6, "remaining": 6 };
+  ScrabbleTiles["S"] = { "value": 1, "distribution": 4, "remaining": 4 };
+  ScrabbleTiles["T"] = { "value": 1, "distribution": 6, "remaining": 6 };
+  ScrabbleTiles["U"] = { "value": 1, "distribution": 4, "remaining": 4 };
+  ScrabbleTiles["V"] = { "value": 4, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["W"] = { "value": 4, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["X"] = { "value": 8, "distribution": 1, "remaining": 1 };
+  ScrabbleTiles["Y"] = { "value": 4, "distribution": 2, "remaining": 2 };
+  ScrabbleTiles["Z"] = { "value": 10, "distribution": 1, "remaining": 1 };
+  ScrabbleTiles["_"] = { "value": 0, "distribution": 2, "remaining": 2 };
+
+  /*
+  ###############################################################
+  #   This variable stores 100 letter
+  #   It generate random tiles with given distribution
+  #   For example, A with 9 that means 9 As in sampleSpaceLetter 
+  #   There are 9 change of 100 to pick A
+  #   Random() is uniform (equal probability)  
+  ###############################################################
+  */
+  sampleSpaceLetters = [];
+
+  // Create sample space for letters depend on their distribution
+  var i, j;
+  var distribution;
+  for (i = 0; i < Object.keys(ScrabbleTiles).length; i++) {
+    distribution = ScrabbleTiles[Object.keys(ScrabbleTiles)[i]].distribution;
+    for (j = 0; j < distribution; j++) {
+      sampleSpaceLetters.push(Object.keys(ScrabbleTiles)[i]);
+    }
+  }
+
+  /*
+  ################################################################
+  #   MEMORY
+  #   Store the result words (this variable is very important!)
+  #   It will save the tiles on the board
+  #   It stores exactly what are on the board as user's screen
+  ################################################################
+  */
+  var myString = [];
+  for (i = 0; i < 15; i++) {
+    myString[i] = new Array(15).fill("*");
+  }
+
+  //console.log(myString)
+
+  var dict = {}; // The dictionary lookup object
+  var chosenLetter, chosenDirection; // chosen letter and chosen direction (from dialog messages)
+  var coef = 100; // coefficient used for random
+  var totalScore = 0; // it stores total score
+  var isValidWord = false; // it determine the word is valid or not
+  var direction = 0; // 0: no direction, 1: left-right, 2: up-down
+  var leftRight = 1; // 1 means go left-right
+  var upDown = 2; // 2 means go up-down
+  var changeDirection = true; // it determines chosen direction
+  var startGame = false; // used to determine the game starts or not
+  var acceptTile = false; // used to determine the tile is accepted or not
+  var saveRow = -1; // used to block other directions, only allow left-right
+  var saveCol = -1; // used to block other directions, only allow up-down
+  var firstTile = false; // used to determine the first tile is placed on the board
+
+  // Set dictionary to dict (data get from the file dict.txt)
+  // Reference from : https://johnresig.com/blog/dictionary-lookups-in-javascript/
+  $.get("dict/dict.txt", function (txt) {
+    // Get an array of all the words
+    var words = txt.split("\n");
+    //console.log(words);
+
+    // And add them as properties to the dictionary lookup
+    // This will allow for fast lookups later
+    for (i = 0; i < words.length; i++) {
+      dict[words[i]] = true;
+    }
+
+    //console.log(dict);
+  });
+
+  /*
+  #########################################################################
+  #   Create the board
+  #   It determine where the tile is
+  #   It is used for making tiles on the board (a picture)
+  #   The board has 15x15
+  #   data-price: determine the bonus score x2 or x3
+  #   word: if a word is valid, x2 or x3
+  #   letter: if a letter is on this square, x2 or x3
+  #   data-index: save the index (row and col) of the square on the board
+  ########################################################################
+  */
+  $("#board").append("<table id='tableBoard'></table>");
+
+  for (i = 0; i < 15; i++) {
+    $("#tableBoard").append("<tr></tr>");
+    for (j = 0; j < 15; j++) {
+      // row 1 and row 15
+      if (i == 0 || i == 14) {
+        if (j % 7 == 0) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-3' data-status='off'></td>");
+        } else if (j == 3 || j == 11) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+        } else {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        }
+      }
+      // row 2 and row 14
+      if (i == 1 || i == 13) {
+        if (j == 1 || j == 13) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
+        } else if (j == 5 || j == 9) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-3' data-status='off'></td>");
+        } else {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        }
+      }
+      // row 3 and row 13
+      if (i == 2 || i == 12) {
+        if (j == 2 || j == 12) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
+        } else if (j == 6 || j == 8) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+        } else {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        }
+      }
+      // row 4 and row 12
+      if (i == 3 || i == 11) {
+        if (j % 7 == 0) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+        } else if (j == 3 || j == 11) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
+        } else {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        }
+      }
+      // row 5 and row 11
+      if (i == 4 || i == 10) {
+        if (j == 4 || j == 10) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
+        } else {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        }
+      }
+      // row 6 and row 10
+      if (i == 5 || i == 9) {
+        if (j == 1 || j == 5 || j == 9 || j == 13) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-3' data-status='off'></td>");
+        } else {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        }
+      }
+      // row 7 and row 9
+      if (i == 6 || i == 8) {
+        if (j == 2 || j == 6 || j == 8 || j == 12) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+        } else {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        }
+      }
+      // row 8 (center)
+      if (i == 7) {
+        if (j == 0 || j == 14) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-3' data-status='off'></td>");
+        } else if (j == 3 || j == 11) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+        } else if (j == 7) {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        } else {
+          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+        }
+      }
+    }
+  }
+
+  /*
+  #####################################################################################
+  #   Create the holder (rack)
+  #   There is 7 tiles on the holder
+  #   data-status of img: if the tile on the board, it turn on; otherwise, turn off
+  #   data-status of td: if the tile on the holder, it turn on; otherwise, turn off
+  #   data-index-holder: determine where the tile belong on the rack (0 to 7)
+  #   data-name: the name of the letter ("A-Z" and "_")
+  #   accept: allow only one tile on the same square (td)
+  #   coef: range that the tiles can be chosen. e.g: 10 means [0, 9], 100 means [0 - 99], etc
+  ######################################################################################
+  */
+  $("#holder").append("<table id='tableHolder'></table>");
+
+  $("#tableHolder").append("<tr></tr>");
+  for (i = 0; i < 7; i++) {
+    var randomLetter = Math.floor(Math.random() * coef); // choose from index 0 to 99
+    var nameLetter = sampleSpaceLetters[randomLetter];
+    if (nameLetter != null) {
+      ScrabbleTiles[nameLetter].remaining--;
+      coef--;
+      var index = sampleSpaceLetters.indexOf(nameLetter);
+      sampleSpaceLetters.splice(index, 1);
+    }
+
+    if (nameLetter != "_") {
+      $("#tableHolder tr").append(
+        "<td data-status='on' data-index='" + i + "'><img data-name='" + nameLetter +
+        "' src='./images/Scrabble_Tile_" + nameLetter + ".jpg'" + "data-index-holder=" + i + "></td>");
+      $("#tableHolder td").eq(i).droppable({
+        accept: "img[data-index-holder='" + i + "']"
+      });
+    } else {
+      nameLetter = "Blank";
+      $("#tableHolder tr").append(
+        "<td data-status='on' data-index='" + i + "'><img data-name='" + nameLetter
+        + "' src='./images/Scrabble_Tile_" + nameLetter + ".jpg'" + "data-index-holder=" + i + "></td>");
+      $("#tableHolder td").eq(i).droppable({
+        accept: "img[data-index-holder='" + i + "']"
+      });
+    }
+  }
+
+  /*
+  ########################################################################
+  #   Button: start over the game
+  #   Call the dialog to confirm
+  ########################################################################
+  */
+  $("#btnStartOver").click(function () {
+    $("#dialog-confirm").dialog("open");
+  });
+
+  /*
+  ########################################################################
+  #   Button reset: call back the tiles back to the rack   
+  ########################################################################
+  */
+  $("#btnReset").click(function () {
+    if ($("#tableHolder td[data-status='off']").length > 0) {
+      // after the tiles go back the rack, status of td contains the tails is back to "on" 
+      $("#tableHolder td[data-status='off']").attr("data-status", "on");
+
+      $("img[data-status='on']").css({
+        position: "relative",
+        top: 0,
+        left: 0
+      });
+
+      // clear error messages
+      printErrorMessages("");
+
+      // Reset the board to accept tiles again
+      $("#tableBoard td").droppable('option', 'accept', "img");
+
+      // Clear display word and score
+      $("#myString").text("Word: ");
+      $("#score").text("Score: 0");
+
+      // Set status of td on the board to off when tiles leave it and come back to the rack
+      for (i = 0; i < $("img[data-status='on']").length; i++) {
+        var index = $("img[data-status='on']").eq(i).attr("data-index");
+        index = index.split("-");
+        var row = index[0];
+        var col = index[1];
+
+        //console.log($("img[data-status='on']").eq(i).attr("data-index"))
+        $("#tableBoard td[data-index='" + row + "-" + col + "']").attr("data-status", "off");
+        $("#tableBoard td[data-index='" + row + "-" + col + "']").removeAttr("data-name");
+        myString[row][col] = "*"; // after it come back to the rack, clear it on the memory (myString)
+      }
+
+      // remove attribute on the tiles
+      $("img").removeAttr("data-status");
+      $("img").removeAttr("data-index");
+
+      // This determines the tile is space or not
+      // if it is space, turn it back to space image when it is on the rack
+      $("#tableHolder img[data-previous-letter='_']").attr("src", "./images/Scrabble_Tile_Blank.jpg");
+      $("#tableHolder img[data-previous-letter='_']").attr("data-name", "Blank");
+
+      // Reset conditional variable (directions)
+      resetVariables();
+    } else {
+      printErrorMessages("No tiles on the board.");
+    }
+  });
+
+  /*
+  ########################################################################
+  #   Button save: save the word on the board and score
+  ########################################################################
+  */
+  $("#btnSave").click(function () {
+    // Get index of the tile
+    var index = $("img[data-status='on']").attr("data-index");
+    var row, col;
+    if (index != null) {
+      index = index.split("-");
+      row = index[0];
+      col = index[1];
+    }
+
+    //console.log("line 302: " + row + ": " + col);
+
+    // Get score
+    var containScore = $("#score").text();
+    containScore = containScore.split(" ");
+    var score = parseInt(containScore[1]);
+
+    // Get the word
+    var containString = $("#myString").text();
+    containString = containString.split(" ");
+    var stringRes = containString[1];
+
+    // increase total score
+    totalScore += score;
+
+    // If there is no active tiles on the board, cannot save the word and display error message
+    // if all td on the holder is off that means no tiles on the board 
+    if ($("#tableHolder td[data-status='off']").length > 0) {
+      if (isValidWord) { // if the word is valid
+        printErrorMessages("");
+
+        // Set position of the tiles (images)
+        $("img[data-status='on']").css({
+          position: "relative",
+          top: 0,
+          left: -2
+        });
+
+        // Display words, scores and saved words
+        $("#myString").text("Word: ");
+        $("#score").text("Score: 0");
+        $("#totalScore").text("Total Score: " + totalScore);
+        $("#save").append("<p>Word: " + stringRes + " ---- Score: " + score + "</p>");
+
+        isValidWord = false; // prepare for new words
+
+
+        //console.log($("#tableBoard td[data-status='on']"));
+        var index, row, col; // these variables are different from outside, used to save images to the board
+
+        // SAVE IMAGES TO BOARD
+        for (i = 0; i < $("img[data-status='on']").length; i++) {
+          //console.log($("img[data-status='on']").eq(i).attr("data-name"));
+          index = $("img[data-status='on']").eq(i).attr("data-index");
+          index = index.split("-");
+          //console.log("line 326: " + index);
+          row = parseInt(index[0]);
+          col = parseInt(index[1]);
+
+          $("#tableBoard td[data-index='" + row + "-" + col + "']").attr("data-save", "on");
+          $("#tableBoard td[data-index='" + row + "-" + col + "']").droppable("disable");
+          $("#tableBoard td[data-index='" + row + "-" + col + "']").append(
+            "<img src='./images/Scrabble_Tile_" + $("img[data-status='on']").eq(i).attr("data-name") + ".jpg'>"
+          )
+        }
+
+        // Block the head and the tail of the word
+        // Do not allow the tile at the head and tail of a saved word
+        // Go left-right, up-down, if found "*", block this square
+        if (direction == leftRight) {
+          for (i = 0; i < 15; i++) {
+            if ($("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").attr("data-save") == null) {
+              $("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").droppable("disable");
+              break;
+            }
+          }
+
+          for (i = 0; i < 15; i++) {
+            if ($("#tableBoard td[data-index='" + row + "-" + (col - i) + "']").attr("data-save") == null) {
+              $("#tableBoard td[data-index='" + row + "-" + (col - i) + "']").droppable("disable");
+              break;
+            }
+          }
+        } else if (direction == upDown) {
+          for (i = 0; i < 15; i++) {
+            if ($("#tableBoard td[data-index='" + (row - i) + "-" + col + "']").attr("data-save") == null) {
+              $("#tableBoard td[data-index='" + (row - i) + "-" + col + "']").droppable("disable");
+              break;
+            }
+          }
+
+          for (i = 0; i < 15; i++) {
+            if ($("#tableBoard td[data-index='" + (row + i) + "-" + col + "']").attr("data-save") == null) {
+              $("#tableBoard td[data-index='" + (row + i) + "-" + col + "']").droppable("disable");
+              break;
+            }
+          }
+        } else {
+          printErrorMessages("error: blocking squares.");
+        }
+
+        // set the image back to before on the board
+        $("img").removeAttr("data-index");
+        $("img[data-status='on']").removeAttr("data-previous-letter");
+        $("#tableBoard td").droppable('option', 'accept', "img");
+
+        // Create new tiles on the rack
+        // only tiles on the board, and keep the tiles that still are on the rack
+        // #tableHolder td: hold the tile (status: on means has a tile, off means the tile on the board)
+        for (i = 0; i < 7; i++) {
+          if ($("#tableHolder td").eq(i).attr("data-status") == "off") { // only tiles on the board
+            //console.log($("#tableHolder td").eq(i).attr("data-status"))
+            var randomLetter = Math.floor(Math.random() * coef);
+            var nameLetter = sampleSpaceLetters[randomLetter];
+            if (nameLetter != null) { // == null means no tiles available
+              ScrabbleTiles[nameLetter].remaining--;
+              coef--;
+              var index = sampleSpaceLetters.indexOf(nameLetter);
+
+              // remove letter from sample space
+              if (sampleSpaceLetters.length > 0) {
+                sampleSpaceLetters.splice(index, 1);
+                updateRemainTable();
+              }
+
+              // Check if the tile is space
+              if (nameLetter != "_") {
+                $("#tableHolder img").eq(i).attr("data-name", nameLetter);
+                $("#tableHolder img").eq(i).attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+                $("#tableHolder img").eq(i).removeAttr("data-status");
+                $("#tableHolder img").eq(i).removeAttr("data-index");
+              } else {
+                nameLetter = "Blank";
+                $("#tableHolder img").eq(i).attr("data-name", nameLetter);
+                $("#tableHolder img").eq(i).attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+                $("#tableHolder img").eq(i).removeAttr("data-status");
+                $("#tableHolder img").eq(i).removeAttr("data-index");
+              }
+            } else {
+              printErrorMessages("There is no more letter.");
+            }
+            $("#tableHolder td").eq(i).attr("data-status", "on");
+          }
+        }
+
+        // reset global variables
+        isValidWord = false;
+        saveCol = -1;
+        saveRow = -1;
+        acceptTile = false;
+        changeDirection = true;
+        firstTile = false;
+        direction = 0;
+      } else {
+        printErrorMessages("Word is not valid.");
+      }
+    } else {
+      printErrorMessages("No words on the board.");
+    }
+  });
+
+  // display rules
+  $("#btnRule").click(function () {
+    $("#dialog-rules").dialog("open");
+  });
+
+  // Create remaining table
+  $("#display").append("<table id='tableRemain'></table>");
+  j = 0;
+  $("#tableRemain").append("<tr><th colspan='9'>Letters Remaining</th></tr>");
+  for (i = 1; i <= 3; i++) {
+    $("#tableRemain").append("<tr></tr>");
+    while (j < 9 * i) {
+      if (Object.keys(ScrabbleTiles)[j] != null) {
+        $("#tableRemain tr").eq(i).append("<td>" +
+          Object.keys(ScrabbleTiles)[j] + ": " +
+          ScrabbleTiles[Object.keys(ScrabbleTiles)[j]].remaining + "</td>");
+      }
+      j++;
+    }
+  }
+
+  // Create choose table letter when play has blank
+  $("#dialog-message").append("<ul id='selectables'></ul>");
+  for (i = 0; i < Object.keys(ScrabbleTiles).length - 1; i++) {
+    $("#dialog-message ul").append("<li data-name='" +
+      Object.keys(ScrabbleTiles)[i] + "'><img src='./images/Scrabble_Tile_" +
+      Object.keys(ScrabbleTiles)[i] + ".jpg'></li>");
+  }
+
+  // Control how to choose a word, space tile means players can choose any tile
+  $("#dialog-message").dialog({
+    dialogClass: "no-close", // no closed tag
+    autoOpen: false, // no auto open
+    modal: true, // can drag move around
+    width: "500",
+    draggable: false,
+    buttons: {
+      Ok: function () {
+        if (chosenLetter != null) {
+          // A letter is chosen
+          //console.log(chosenLetter)
+          $("img[data-status='on'][data-name='Blank']").attr("data-name", chosenLetter);
+
+          // Set the chosen letter to memory (myString)
+          var index = $("img[data-status='on'][data-name='" + chosenLetter + "']").attr("data-index");
+          if (index != null) {
+            var tempIndex = index.split("-");
+            var row = parseInt(tempIndex[0]);
+            var col = parseInt(tempIndex[1]);
+            myString[row][col] = chosenLetter;
+          }
+
+          $("#tableBoard td[data-index='" + index + "']").attr("data-name", chosenLetter);
+
+          //console.log("update string: " + myString);
+
+          // determine if players go left-right or up-down
+          if (changeDirection && !acceptTile) {
+            for (i = 1; i < 15; i++) {
+              if ($("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").attr("data-status") == "on") {
+                direction = leftRight;
+                saveRow = row;
+                break;
+              }
+              if ($("#tableBoard td[data-index='" + row + "-" + (col - i) + "']").attr("data-status") == "on") {
+                direction = leftRight;
+                saveRow = row;
+                break;
+              }
+
+              if ($("#tableBoard td[data-index='" + (row + i) + "-" + col + "']").attr("data-status") == "on") {
+                direction = upDown;
+                saveCol = col;
+                break;
+              }
+
+              if ($("#tableBoard td[data-index='" + (row - i) + "-" + col + "']").attr("data-status") == "on") {
+                direction = upDown;
+                saveCol = col;
+                break;
+              }
+            }
+          }
+          //console.log("direction line 440:" + direction);
+          //console.log(direction)
+          //console.log(acceptTile)
+          // Display word and score
+          if (direction != 0 && acceptTile || $("#tableHolder td[data-status='off']").length == 1) {
+            $("#myString").text("Word: " + displayString(row, col));
+            $("#score").text("Score: " + score(row, col));
+          }
+
+          chosenLetter = null; // set chosen letter to null means no letter is chosen
+
+          $("li[class='ui-selectee ui-selected']").css("background-color", "black");
+          $(this).dialog("close"); // close dialog
+        } else {
+          if ($("#dialog-message p").length) {
+            $("#dialog-message p").remove();
+          }
+          $("#dialog-message").append("<p>Please choose one letter.</p>")
+          $("#dialog-message p").css("color", "red");
+        }
+
+      }
+    }
+  });
+
+  // Selectable for dialog-message
+  $("#selectables").selectable({
+    selected: function (event, ui) { // selected
+      chosenLetter = $(ui.selected).attr("data-name");
+      //console.log(chosenLetter)
+      if (chosenLetter != null) {
+        // Set the chosen letter
+        // data-previous-letter: used for change the tiles back to space if it comes back to the rack
+        if ($("#dialog-message p").length) {
+          $("#dialog-message p").remove();
+        }
+        $("img[data-status='on'][data-name='Blank']").attr("data-previous-letter", "_");
+        $("img[data-status='on'][data-name='Blank']").attr("src", "./images/Scrabble_Tile_" + chosenLetter + ".jpg")
+        $(ui.selected).css("background-color", "red");
+      } else {
+        $("img[data-status='on'][data-name='Blank']").attr("src", "./images/Scrabble_Tile_Blank.jpg")
+        $("li[class='ui-selectee ui-selected']").css("background-color", "black");
+      }
+    },
+    unselected: function (event, ui) { // unselected
+      $(ui.unselected).css("background-color", "black");
+      chosenLetter = null;
+    }
+  });
+
+  // Dialog choose direction
+  $("#dialog-direction").dialog({
+    dialogClass: "no-close",
+    draggable: false,
+    autoOpen: false,
+    modal: true,
+    draggable: false,
+    width: "500",
+    buttons: {
+      Ok: function () {
+        if (chosenDirection != null) {
+
+          // If choose left-right, delete the saveCol (unblock only allow move left-right)
+          if (chosenDirection == "leftRight") {
+            saveCol = -1;
+          }
+          // If choose up-down, delete the saveRow (unblock only allow move up-down)
+          if (chosenDirection == "upDown") {
+            saveRow = -1;
+          }
+          $("#select-direction li").css("background-color", "black");
+          $(this).dialog("close");
+        } else {
+          if ($("#dialog-direction p").length) {
+            $("#dialog-direction p").remove();
+          }
+          $("#dialog-direction").append("<p>Please choose one letter.</p>")
+          $("#dialog-direction p").css("color", "red");
+        }
+      }
+    }
+  });
+
+  // Selectable for dialog-direction
+  $("#select-direction").selectable({
+    selected: function (event, ui) {
+      chosenDirection = $(ui.selected).attr("data-name");
+      //console.log(chosenDirection)
+      if (chosenDirection != null) {
+        if ($("#dialog-direction p").length) {
+          $("#dialog-direction p").remove();
+        }
+
+        if (chosenDirection == "leftRight") {
+          direction = leftRight;
+        }
+
+        if (chosenDirection == "upDown") {
+          direction = upDown;
+        }
+
+        // Dislay word and score, when players choose letters
+        var index = $("img[data-status='on']").attr("data-index");
+        if (index != null) {
+          index = index.split("-");
+          var row = index[0];
+          var col = index[1];
+          row = parseInt(row);
+          col = parseInt(col);
+          $("#myString").text("Word: " + displayString(row, col));
+          $("#score").text("Score: " + score(row, col));
+        }
+        $("#select-direction li[class='ui-selectee ui-selected']").css("background-color", "red");
+      } else {
+        $("#select-direction li[class='ui-selectee ui-selected']").css("background-color", "black");
+      }
+    },
+    unselected: function (event, ui) {
+      $(ui.unselected).css("background-color", "");
+    }
+  });
+
+  // Dialog display rules for the game
+  $("#dialog-rules").dialog({
+    autoOpen: false,
+    width: "500",
+    height: "400",
+    modal: true,
+    draggable: false,
+    buttons: {
+      Ok: function () {
+        $(this).dialog("close");
+      }
+    }
+  });
+
+  // Confirm to messure players want to start the game again
+  $("#dialog-confirm").dialog({
+    autoOpen: false,
+    height: "auto",
+    width: 400,
+    modal: true,
+    draggable: false,
+    buttons: {
+      Ok: function () {
+        // Set global variable back to starting state
+        startGame = false;
+        acceptTile = false;
+        saveRow = -1;
+        saveCol = -1;
+        firstTile = false;
+        changeDirection = true;
+        isValidWord = false;
+        totalScore = 0;
+        direction = 0;
+
+        // Take back tiles to the rack
+        // And change their data back to starting state
+        $("img[data-status='on']").css({
+          position: "relative",
+          top: 0,
+          left: 0
+        });
+        $("#tableHolder td").attr("data-status", "on");
+        $("#tableBoard td").droppable("enable");
+        $("#tableBoard td").droppable('option', 'accept', "img");
+        $("#tableBoard td").attr("data-status", "off");
+        $("#tableBoard td").removeAttr("data-name");
+        $("#tableBoard td img").remove();
+        $("img").removeAttr("data-index");
+
+        // Clear memory (myString)
+        for (i = 0; i < 15; i++) {
+          myString[i].fill("*");
+        }
+
+        //console.log(myString)
+
+        // Clear display
+        $("#myString").text("Word: ");
+        $("#score").text("Score: 0");
+        $("#error-message p").text("");
+
+        $("#totalScore").text("Total Score: 0");
+        $("#save p").text("");
+
+        //console.log("Before remove: " + sampleSpaceLetters);
+        var indexOfLetter = 0;
+        for (i = 0; i < Object.keys(ScrabbleTiles).length; i++) {
+          distribution = ScrabbleTiles[Object.keys(ScrabbleTiles)[i]].distribution;
+          ScrabbleTiles[Object.keys(ScrabbleTiles)[i]].remaining = ScrabbleTiles[Object.keys(ScrabbleTiles)[i]].distribution;
+          for (j = 0; j < distribution; j++) {
+            sampleSpaceLetters[indexOfLetter] = Object.keys(ScrabbleTiles)[i];
+            indexOfLetter++;
+          }
+        }
+
+        coef = 100; // set this value back to 100 for choose [0 to 99]
+
+        //console.log(sampleSpaceLetters);
+
+        // Create new tiles on the rack
+        for (i = 0; i < 7; i++) {
+          var randomLetter = Math.floor(Math.random() * coef);
+          var nameLetter = sampleSpaceLetters[randomLetter];
+          //console.log(nameLetter);
+
+          if (nameLetter != null) {
+            ScrabbleTiles[nameLetter].remaining--;
+            coef--;
+            var index = sampleSpaceLetters.indexOf(nameLetter);
+            if (sampleSpaceLetters.length > 0) {
+              sampleSpaceLetters.splice(index, 1);
+            }
+            updateRemainTable();
+            if (nameLetter != "_") {
+              $("#tableHolder img").eq(i).attr("data-name", nameLetter);
+              $("#tableHolder img").eq(i).attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+              $("#tableHolder img").eq(i).removeAttr("data-status");
+            } else {
+              nameLetter = "Blank";
+              $("#tableHolder img").eq(i).attr("data-name", nameLetter);
+              $("#tableHolder img").eq(i).attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+              $("#tableHolder img").eq(i).removeAttr("data-status");
+            }
+          } else {
+            printErrorMessages("There is no more letter.");
+          }
+        }
+        //console.log("After remove: " + sampleSpaceLetters);
+
+        $(this).dialog("close");
+      },
+      Cancel: function () {
+        $(this).dialog("close");
+      }
+    }
+  });
+
+  // Draggable for the rack
+  $("#tableHolder td img").draggable({
+    containment: "document",
+    drag: function (event, ui) {
+      $(this).draggable("option", "revert", "invalid");
+      $("#tableHolder td").eq($(this).attr("data-index-holder")).css("box-shadow", "0px 0px 7px 8px blue");;
+    },
+    stop: function (event, ui) {
+      $("#tableHolder td").eq($(this).attr("data-index-holder")).css("box-shadow", "");;
+    }
+  });
+
+  // Reference from: https://forum.jquery.com/topic/drag-and-drop-issue-fit-my-drop
+  // Board Droppable
+  $("#tableBoard td").droppable({
+    drop: function (event, ui) {
+      //console.log("accept items from holder");
+      //console.log(myString);
+      $(this).css("box-shadow", "");
+      $("#tableHolder td").eq(ui.draggable.attr("data-index-holder")).attr("data-status", "off");
+
+      var letterResult = ui.draggable.attr("data-name"); // get letter
+
+      if (letterResult == "Blank") {
+        $("#dialog-message").dialog("open");
+      }
+
+      // Get index of the letter (where it is)
+      var index = $(this).attr("data-index");
+      var tempIndex = index.split("-");
+      var row = parseInt(tempIndex[0]);
+      var col = parseInt(tempIndex[1]);
+
+      //console.log("row-col in the droppable board: " + row + "-" + col);
+      myString[row][col] = letterResult;
+      // console.log(myString);
+      if (row == 7 && col == 7) {
+        // START GAME HERE
+        startGame = true;
+        firstTile = true;
+      } else {
+        firstTile = false;
+      }
+
+      var isLeftRight = false; // check going left-right
+      var isUpDown = false; // check going up-down
+      var count = 0; // used to determine two tiles are adjacent
+
+      // determine if play go left-right or up-down
+      if (changeDirection && !acceptTile) {
+        for (i = 1; i < 15; i++) {
+          count++;
+          if ((col + i) < 15) {
+            if ($("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").attr("data-status") == "on") {
+              if (count == 1) {
+                saveRow = row;
+                direction = leftRight;
+                isLeftRight = true;
+              }
+              break;
+            }
+          }
+        }
+        count = 0;
+        for (i = 1; i < 15; i++) {
+          count++;
+          if ((col - i) >= 0) {
+            if ($("#tableBoard td[data-index='" + row + "-" + (col - i) + "']").attr("data-status") == "on") {
+              if (count == 1) {
+                direction = leftRight;
+                saveRow = row;
+                isLeftRight = true;
+              }
+              break;
+            }
+          }
+        }
+        count = 0;
+        for (i = 1; i < 15; i++) {
+          count++;
+          if ((row + i) < 15) {
+            if ($("#tableBoard td[data-index='" + (row + i) + "-" + col + "']").attr("data-status") == "on") {
+              if (count == 1) {
+                saveCol = col;
+                direction = upDown;
+                isUpDown = true;
+              }
+              break;
+            }
+          }
+        }
+        count = 0;
+        for (i = 1; i < 15; i++) {
+          count++;
+          if ((row - i) >= 0) {
+            if ($("#tableBoard td[data-index='" + (row - i) + "-" + col + "']").attr("data-status") == "on") {
+              if (count == 1) {
+                saveCol = col;
+                direction = upDown;
+                isUpDown = true;
+              }
+              break;
+            }
+          }
+        }
+      }
+
+      // There are two directions, so pop-up a dialog and ask players to choose the direction
+      if (isLeftRight && isUpDown) {
+        $("#dialog-direction").dialog("open");
+      }
+
+      //console.log("dicrection: " + direction);
+
+      //console.log("left-right: " + goLeftRight);
+      //console.log("up-down: " + goUpDown);
+
+      //console.log("saveRow: " + saveRow);
+      //console.log("saveCol: " + saveCol);
+
+
+      if (!startGame) {
+        // If the first tile is not at start icon, comes back to the rack
+        printErrorMessages("The first tile must be at the star icon.");
+        ui.draggable.draggable("option", "revert", true);
+        myString[row][col] = "*";
+        $("#tableHolder td[data-index='" + ui.draggable.attr("data-index-holder") + "']").attr("data-status", "on")
+      } else {
+        if ($(this).attr("data-index") != ui.draggable.attr("data-index")
+          && $("#tableBoard td[data-status='on']").length > 0
+          && ui.draggable.attr("data-index") != null) {
+
+          // do not allow moving, when the tile is placed on the board
+          printErrorMessages(
+            "Once the tile is placed on the Scrabble board, it can not be moved. Take it back to the rack to move it."
+          );
+
+          ui.draggable.draggable("option", "revert", true);
+
+          myString[row][col] = "*";
+          myString[ui.draggable.attr("data-index")] = ui.draggable.attr("data-name");
+          //console.log(myString[row]);
+        } else {
+          if (saveRow == row || saveCol == col || firstTile) {
+            if (isAdjacent(row, col)) {
+              // HERE IS VALID MOVE
+              if (!firstTile) {
+                acceptTile = true;
+                changeDirection = false;
+              }
+
+              printErrorMessages("");
+
+              // move the tiles fit to the square on the board
+              var offset = $(this).offset();
+              ui.draggable.css({
+                position: 'absolute',
+                top: offset.top,
+                left: offset.left
+              });
+
+              // Setup data for img
+              ui.draggable.attr("data-index", row + "-" + col);
+              ui.draggable.attr("data-status", "on");
+
+              $(this).attr("data-status", "on");
+              myString[row][col] = ui.draggable.attr("data-name");
+
+              if (ui.draggable.attr("data-name") != "Blank") {
+                //console.log("wewe")
+                $(this).attr("data-name", ui.draggable.attr("data-name"));
+              }
+
+              // Display string result
+              //console.log(direction)
+              $("#myString").text("Word: " + displayString(row, col));
+              //console.log("myString: " + myString[row]);
+
+              // Display Score
+              $("#score").text("Score: " + score(row, col));
+
+              // Does not accept two letters on the same square
+              $(this).droppable('option', 'accept', ui.draggable);
+            } else {
+              // HERE TWO TILES ARE NOT ADJACENT
+              acceptTile = false;
+              ui.draggable.draggable("option", "revert", true); // Go back to the rack
+              $("#tableHolder td[data-index='" + ui.draggable.attr("data-index-holder") + "']").attr("data-status", "on")
+              $("#tableBoard td[data-status='off']").droppable('option', 'accept', "img");
+
+              // Delete and set back value to myString
+              myString[row][col] = "*";
+
+              console.log(myString);
+              printErrorMessages("Do not allow space between two letters.");
+              //console.log("After remove:");
+              //console.log(myString);
+            }
+          } else {
+            // HERE THE TILE IS PLACE IN THE WRONG DIRECTION
+            // only allow one direction at each word
+            ui.draggable.draggable("option", "revert", true);
+            $("#tableHolder td[data-index='" + ui.draggable.attr("data-index-holder") + "']").attr("data-status", "on")
+            myString[row][col] = "*";
+            // console.log("saveRow: " + saveCol);
+            // console.log("row: " + row);
+            // console.log("saveCol: " + saveCol);
+            // console.log("col: " + col);
+            if (direction == leftRight) {
+              printErrorMessages("Only allow left-right move.");
+            } else if (direction == upDown) {
+              printErrorMessages("Only allow up-down move.");
+            } else {
+              printErrorMessages("Do not allow diagonal move.");
+            }
+          }
+        }
+      }
+    },
+
+    // Out of board
+    out: function (event, ui) {
+      //console.log("out from board");
+
+      // re-accept all
+      $(this).css("box-shadow", "");
+    },
+
+    over: function (event, ui) {
+      $(this).css("box-shadow", "0px 0px 7px 8px red");
+    }
+
+  });
+
+  // Holder droppable
+  $("#tableHolder td").droppable({
+    drop: function (event, ui) {
+      //console.log("accept items from board");
+      printErrorMessages("");
+      // console.log(myString)
+      $(this).css("box-shadow", "");
+
+      $(this).attr("data-status", "on");
+
+      // If the tile is space, take it back to the space image
+      var previousLetter = ui.draggable.attr("data-previous-letter");
+      if (previousLetter != null) {
+        ui.draggable.attr("src", "./images/Scrabble_Tile_Blank.jpg");
+        ui.draggable.attr("data-name", "Blank");
+      }
+
+      // Set position fit to the rack
+      var offset = $(this).offset();
+      ui.draggable.css({
+        position: 'absolute',
+        top: offset.top,
+        left: offset.left + 2
+      });
+
+      $("#tableBoard td[data-index='" + ui.draggable.attr("data-index") + "']").attr("data-status", "off");
+      $("#tableBoard td[data-index='" + ui.draggable.attr("data-index") + "']").removeAttr("data-name");
+
+      var index = ui.draggable.attr("data-index");
+      var tempIndex, row, col;
+
+      // Display string and score
+      if (index != null) {
+        tempIndex = index.split("-");
+        row = parseInt(tempIndex[0]);
+        col = parseInt(tempIndex[1]);
+        myString[row][col] = "*";
+
+        // because the tile is taken back to the rack
+        // skip it to make the displayString() works correctly
+        if (direction == leftRight) {
+          if (myString[row][col - 1] != "*") {
+            col--;
+          } else if (myString[row][col + 1] != "*") {
+            col++;
+          }
+        }
+
+        if (direction == upDown) {
+          if (myString[row + 1][col] != "*") {
+            row++;
+          } else if (myString[row - 1][col] != "*") {
+            row--;
+          }
+        }
+
+        $("#myString").text("Word: " + displayString(row, col));
+        $("#score").text("Score: " + score(row, col));
+      }
+
+      // Reset conditional variable (directions)
+      resetVariables();
+
+      ui.draggable.removeAttr("data-status");
+      ui.draggable.removeAttr("data-index");
+      ui.draggable.removeAttr("data-previous-letter");
+
+      $("#tableBoard td[data-status='off']").droppable('option', 'accept', "img");
+    },
+
+    out: function (event, ui) {
+      //console.log("out from holder");
+
+      $(this).css("box-shadow", "");
+    }
+
+  });
+
+  // Exchange tiles
+  // When the players drop a tile, exchange the new tile for them
+  $("#exchangeTiles").droppable({
+    drop: function (event, ui) {
+      //console.log("hello");
+      ui.draggable.draggable("option", "revert", true);
+
+      if (ui.draggable.attr("data-status") != "on") {
+        if (ui.draggable.attr("data-name") != "Blank") {
+          //console.log($("#tableHolder td").attr("data-status"))
+          var randomLetter = Math.floor(Math.random() * coef);
+
+          var nameLetter = sampleSpaceLetters[randomLetter];
+          if (nameLetter != null) {
+            ScrabbleTiles[nameLetter].remaining--;
+            ScrabbleTiles[ui.draggable.attr("data-name")].remaining++;
+            var index = sampleSpaceLetters.indexOf(nameLetter);
+
+            // remove letter from sample space
+            if (sampleSpaceLetters.length > 0) {
+              sampleSpaceLetters.splice(index, 1);
+              sampleSpaceLetters.splice(index, 0, ui.draggable.attr("data-name"));
+              updateRemainTable();
+            }
+
+            var indexDraggable = ui.draggable.attr("data-index-holder")
+
+            if (nameLetter != "_") {
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("data-name", nameLetter);
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-status");
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-index");
+            } else {
+              nameLetter = "Blank";
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("data-name", nameLetter);
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-status");
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-index");
+            }
+          } else {
+            printErrorMessages("There is no more letter.");
+          }
+        } else {
+          printErrorMessages("Cannot exchange space tile. Please choose another one.");
+        }
+      } else {
+        printErrorMessages("Cannot exchange the tile on the board. Take it back to the rack, then exchange it.");
+      }
+
+    },
+
+    out: function (event, ui) {
+      //console.log("out from holder");
+    }
+
+  });
+
+  /*##################################################
+   #   FUNCTIONS LOCATED HERE
+   ##################################################
+  */
+  // reset variable (reset global variables)
+  function resetVariables() {
+    // Reset conditional variable (directions)
+    //console.log(changeDirection)
+    if ($("#tableHolder td[data-status='off'").length == 0) {
+      saveCol = -1;
+      saveRow = -1;
+
+      if ($("#tableBoard td[data-save='on']").length == 0) {
+        startGame = false;
+      }
+
+      firstTile = false;
+      acceptTile = false;
+      changeDirection = true;
+      direction = 0;
+    }
+
+    if ($("#tableHolder td[data-status='off'").length == 1) {
+      saveCol = -1;
+      saveRow = -1;
+      acceptTile = false;
+      changeDirection = true;
+      if ($("#tableBoard td[data-save='on']").length == 0) {
+        direction = 0;
+      }
+    }
+
+    if ($("#tableHolder td[data-status='off'").length == 7) {
+      $("#myString").text("Word: ");
+      $("#score").text("Score: 0");
+    }
+    //console.log(changeDirection)
+  }
+
+  // Check if there must be two blocks are adjacent
+  function isAdjacent(row, col) {
+    // Check error (no allow space between letters)
+    var firstLetter = false;
+    row = parseInt(row);
+    col = parseInt(col);
+    //console.log(direction)
+
+    if (direction == leftRight) {
+      if (myString[row][col - 1] != "*" || myString[row][col + 1] != "*") {
+        return true;
+      }
+      for (var i = 0; i < myString.length - 1; i++) {
+        if (!firstLetter) {
+          if (myString[row][i] != "*") {
+            firstLetter = true;
+          }
+        } else {
+          if (myString[row][i] == "*" && myString[row][i + 1] != "*") {
+            return false;
+          }
+        }
+      }
+      //console.log(myString);
+      //console.log(isAdjacent);
+      return true;
+    } else if (direction == upDown) {
+      if (myString[row + 1][col] != "*" || myString[row - 1][col] != "*") {
+        return true;
+      }
+      for (var i = 0; i < myString.length - 1; i++) {
+        if (!firstLetter) {
+          if (myString[i][col] != "*") {
+            firstLetter = true;
+          }
+        } else {
+          if (myString[i][col] == "*" && myString[i + 1][col] != "*") {
+            return false;
+          }
+        }
+      }
+      //console.log(myString);
+      //console.log(isAdjacent);
+      return true;
+    } else {
+      return true; // first tile
+    }
+  }
+
+  // update remaining table 
+  function updateRemainTable() {
+    var i;
+    for (i = 0; i < $("#tableRemain td").length; i++) {
+      var letter = Object.keys(ScrabbleTiles)[i];
+      $("#tableRemain td").eq(i).text(letter + ": " + ScrabbleTiles[letter].remaining);
+    }
+  }
+
+  /*
+  #############################################################################################
+  #   Display the word
+  #   If the tile on the right, go left the memory(myString), then revert it
+  #   if the tile on the left, go right the memory(myString)
+  #   if the tile on the middle, go left the memory(myString) and go right the memory(myString)
+  #   Then, return the string result
+  ################################################################################################
+  */
+  function displayString(row, col) {
+    var str = "";
+    // Store characters, then add them up to create the word
+    var tempLeft = "";
+    var tempRight = "";
+    var tempUp = "";
+    var tempDown = "";
+    var i;
+    var isStartAtMiddle = false; // use to determine if the tile is on the middel of the word
+    var isRight = false; // used to determine if it reaches the right most letter
+    var isLeft = false; // used to determine if it reaches the left most letter
+    var isUp = false; // used to determine if it reaches the up most letter
+    var isDown = false; // used to determine if it reaches the down most letter
+
+    row = parseInt(row);
+    col = parseInt(col);
+
+    //console.log(row + ": " + col)
+
+    // startGame
+    if ($("#tableHolder td[data-status='off']").length == 1 && $("#tableBoard td[data-save='on']").length == 0) {
+      if (myString[row][col] != "*" && myString[row][col] != "Blank") {
+        return myString[row][col];
+      }
+    } else {
+      if (myString[row][col] == "*") {
+        return "";
+      }
+    }
+
+    if (direction == leftRight) { // LEFT RIGHT
+      for (i = 0; i < 15; i++) {
+        if (myString[row][col + 1] != "*" && myString[row][col - 1] != "*") { // start on the middle of the word  
+          isStartAtMiddle = true;
+          if (myString[row][col + i] != "*" && myString[row][col] != "Blank") {
+            tempRight += myString[row][col + i];
+          } else {
+            isRight = true;
+          }
+
+          if (myString[row][col - i] != "*" && myString[row][col] != "Blank") {
+            tempLeft += myString[row][col - i];
+          } else {
+            isLeft = true;
+          }
+
+          if (isRight && isLeft) { // if reach left and right break the loop
+            break;
+          }
+
+        } else if (myString[row][col + 1] != "*" && myString[row][col] != "Blank") { // start on the left of the word  
+          if (myString[row][col + i] != "*") {
+            str += myString[row][col + i];
+          } else {
+            break;
+          }
+        } else if (myString[row][col - 1] != "*" && myString[row][col] != "Blank") { // start on the right of the word  
+          if (myString[row][col - i] != "*" && myString[row][col] != "Blank") {
+            str += myString[row][col - i];
+          } else {
+            str = str.split("").reverse().join(""); // reverse because it goes from right to left
+            break;
+          }
+        }
+      }
+      if (isStartAtMiddle) { // if tile is at middle of the word
+        tempLeft = tempLeft.split("").reverse().join("");
+        tempRight = tempRight.substring(1);
+        str = tempLeft + tempRight;
+      }
+      return str;
+    } else if (direction == upDown) { // UP DOWN
+      for (i = 0; i < 15; i++) {
+        if (myString[row + 1][col] != "*" && myString[row - 1][col] != "*") { // start on the middle of the word  
+          isStartAtMiddle = true;
+          if (myString[row + i][col] != "*" && myString[row][col] != "Blank") {
+            tempDown += myString[row + i][col];
+          } else {
+            isDown = true;
+          }
+
+          if (myString[row - i][col] != "*" && myString[row][col] != "Blank") {
+            tempUp += myString[row - i][col];
+          } else {
+            isUp = true;
+          }
+
+          if (isDown && isUp) {
+            break;
+          }
+
+        } else if (myString[row + 1][col] != "*") {
+          if (myString[row + i][col] != "*" && myString[row][col] != "Blank") { // start on the up of the word  
+            str += myString[row + i][col];
+          } else {
+            break;
+          }
+        } else if (myString[row - 1][col] != "*") {
+          if (myString[row - i][col] != "*" && myString[row][col] != "Blank") { // start on the down of the word  
+            str += myString[row - i][col];
+            //console.log(str);
+          } else {
+            str = str.split("").reverse().join(""); // reverse because it goes from down to up
+            break;
+          }
+        }
+      }
+
+      if (isStartAtMiddle) {
+        tempUp = tempUp.split("").reverse().join("");
+        tempDown = tempDown.substring(1);
+        str = tempUp + tempDown;
+      }
+
+      return str;
+    } else {
+      return myString[row][col]; // return a single letter
+    }
+
+  }
+
+  /*
+  ###################################################################
+  #   Determine score
+  #   Used the letters are saved on the board <td> tag
+  #   Then calculate the score
+  ###################################################################
+  */
+  function score(row, col) {
+    var score = 0;
+    //var status = $("img[data-status='on']");
+    var condition; // word or letter
+    var wordPrice = []; // store array of x2 or x3
+    var price; // x2 or x3
+    var countBonus = 0; // if word has 7 letters, + 50
+
+    //console.log(direction)
+    //checkWords(row, col)
+    //DEBUG
+    if (checkWords(row, col)) {
+      isValidWord = true;
+      if (direction == leftRight) { // left-right
+        for (i = 0; i < 15; i++) {
+          if (myString[row][col + 1] != "*") { // go right
+            if (myString[row][col + i] != "*" && myString[row][col] != "Blank") {
+              // get value of a tile from the data structure
+              var v = ScrabbleTiles[myString[row][col + i]].value;
+
+              // Get price is saved on the <td> tag
+              // dataFromTd[0]: letter or word
+              // dataFromTd[1]: x2 or x3
+              var dataFromTd = $("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").attr("data-price");
+              //console.log("value: " + v);
+
+              if (dataFromTd != null) {
+                dataFromTd = dataFromTd.split("-");
+                condition = dataFromTd[0];
+                price = parseInt(dataFromTd[1]);
+                if (condition == "letter") {
+                  score += v * price;
+                  countBonus++;
+                } else {
+                  wordPrice.push(price);
+                  score += v;
+                  countBonus++;
+                }
+              } else {
+                score += v;
+                countBonus++;
+              }
+            } else {
+              break;
+            }
+          }
+
+          if (myString[row][col - 1] != "*") { // go left
+            if (myString[row][col - i] != "*" && myString[row][col] != "Blank") {
+
+              var v = ScrabbleTiles[myString[row][col - i]].value;
+
+              var dataFromTd = $("#tableBoard td[data-index='" + row + "-" + (col - i) + "']").attr("data-price");
+              //console.log("value: " + v);
+              if (dataFromTd != null) {
+                dataFromTd = dataFromTd.split("-");
+                condition = dataFromTd[0];
+                price = parseInt(dataFromTd[1]);
+                if (condition == "letter") {
+                  score += v * price;
+                  countBonus++;
+                } else {
+                  wordPrice.push(price);
+                  score += v;
+                  countBonus++;
+                }
+              } else {
+                score += v;
+                countBonus++;
+              }
+            } else {
+              break;
+            }
+          }
+        }
+
+        //console.log(score);
+        //console.log(wordPrice);
+        if (wordPrice.length > 0) {
+          for (i = 0; i < wordPrice.length; i++) {
+            score = score * parseInt(wordPrice[i]);
+          }
+        }
+        if (countBonus == 7) {
+          return score + 50;
+        } else {
+          return score;
+        }
+      } else if (direction == upDown) { // up-down
+        // console.log("hello from up")
+        // console.log(row + ":" + col)
+        // console.log(myString)
+        for (i = 0; i < 15; i++) {
+          if (myString[row + 1][col] != "*") { // go down
+            if (myString[row + i][col] != "*" && myString[row][col] != "Blank") {
+              var v = ScrabbleTiles[myString[row + i][col]].value;
+
+              var dataFromTd = $("#tableBoard td[data-index='" + (row + i) + "-" + col + "']").attr("data-price");
+              //console.log("value: " + v);
+              if (dataFromTd != null) {
+                dataFromTd = dataFromTd.split("-");
+                condition = dataFromTd[0];
+                price = parseInt(dataFromTd[1]);
+                if (condition == "letter") {
+                  score += v * price;
+                  countBonus++;
+                } else {
+                  wordPrice.push(price);
+                  score += v;
+                  countBonus++;
+                }
+              } else {
+                score += v;
+                countBonus++;
+              }
+            } else {
+              break;
+            }
+          }
+
+          if (myString[row - 1][col] != "*") { // go up
+            if (myString[row - i][col] != "*" && myString[row][col] != "Blank") {
+              var v = ScrabbleTiles[myString[row - i][col]].value;
+
+              var dataFromTd = $("#tableBoard td[data-index='" + (row - i) + "-" + col + "']").attr("data-price");
+              //console.log("value: " + v);
+              if (dataFromTd != null) {
+                dataFromTd = dataFromTd.split("-");
+                condition = dataFromTd[0];
+                price = parseInt(dataFromTd[1]);
+                if (condition == "letter") {
+                  score += v * price;
+                  countBonus++;
+                } else {
+                  wordPrice.push(price);
+                  score += v;
+                  countBonus++;
+                }
+              } else {
+                score += v;
+                countBonus++;
+              }
+            } else {
+              break;
+            }
+          }
+        }
+
+        if (wordPrice.length > 0) {
+          for (i = 0; i < wordPrice.length; i++) {
+            score = score * parseInt(wordPrice[i]);
+          }
+        }
+        if (countBonus == 7) {
+          return score + 50;
+        } else {
+          return score;
+        }
+      }
+    } else {
+      isValidWord = false;
+      return 0;
+    }
+  }
+
+  // Check valid words
+  function checkWords(row, col) {
+    var myWord = "";
+    var i;
+
+    //console.log("CHECK WORD")
+    //console.log("row: " + row)
+    //console.log("col: " + col)
+    //console.log("direction: " + direction)
+    //console.log(startGame);
+
+    // Get the word from memory (myString)
+    if ($("#tableHolder td[data-status='off']").length == 1 && !startGame) {
+      myWord = myString[row][col];
+    } else {
+      if (direction == leftRight) {
+        for (i = 0; i < 15; i++) {
+          if (myString[row][col + 1] != "*") {
+            if (myString[row][col + i] != "*") {
+              myWord += myString[row][col + i].toLowerCase();
+            } else {
+              break;
+            }
+          }
+
+          if (myString[row][col - 1] != "*") {
+            goRight = true;
+            if (myString[row][col - i] != "*") {
+              myWord += myString[row][col - i].toLowerCase();
+            } else {
+              myWord = myWord.split("").reverse().join("");
+              break;
+            }
+          }
+        }
+
+        //console.log("myWord:" + myWord);
+
+        if (findWord(myWord) != "") {
+          return true;
+        } else {
+          return false;
+        }
+      } else if (direction == upDown) {
+        //console.log(row + ":" + col);
+        //console.log(myString);
+        for (i = 0; i < 15; i++) {
+          if (myString[row + 1][col] != "*") {
+            if (myString[row + i][col] != "*") {
+              myWord += myString[row + i][col].toLowerCase();
+            } else {
+              break;
+            }
+          }
+
+          if (myString[row - 1][col] != "*") {
+            goRight = true;
+            if (myString[row - i][col] != "*") {
+              myWord += myString[row - i][col].toLowerCase();
+            } else {
+              myWord = myWord.split("").reverse().join("");
+              break;
+            }
+          }
+        }
+        //console.log("myWord:" + myWord);
+      }
+
+      if (findWord(myWord) != "") {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  // Find the word in the dictionary
+  function findWord(word) {
+    //console.log("word search: " + word);
+
+    // If the word on the dictionary, return it
+    if (word.length > 1) {
+      if (dict[word]) {
+        return word;
+      }
+    }
+
+    // if no, return nothing
+    return "";
+  }
+
+  // print error messages
+  function printErrorMessages(msg) {
+    $("#error-message p").text(msg);
+    $("#error-message p").css("color", "red");
+  }
+});

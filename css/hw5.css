@@ -1,0 +1,147 @@
+#wrapper {
+    display: grid;
+    grid-template-columns: 5fr 4fr;
+    min-width: 1200px;
+}
+
+#board {
+    background-image: url("../images/ScrabbleBoard.jpg");
+    background-repeat: no-repeat;
+    background-size: 668px 640px;
+    height: 640px;
+    grid-row: 1/4;
+}
+
+#tableBoard {
+    border-collapse: collapse;
+    margin-left: 90px;
+    margin-top: 49px;
+}
+
+#board td {
+    width: 31px;
+    height: 32px;
+    border: 2px solid transparent;
+    /* background-color: aqua; */
+}
+
+#tableHolder img {
+    width: 35px;
+    height: 35px;
+}
+
+#dialog-message img {
+    width: 61px;
+    height: 61px;
+}
+
+#dialog-message ul, #dialog-direction ul {
+    list-style-type: none;
+}
+
+#dialog-message li, #dialog-direction li {
+    display: inline;
+    margin-left: 4px;
+    background-color: black;
+    cursor: pointer;
+}
+
+#dialog-direction li {
+    display: inline;
+    cursor: pointer;
+}
+
+#dialog-direction img {
+    width: 100px;
+    height: 100px;
+}
+
+#holder {
+    background-image: url("../images/scrabble-tile-holder-406774_640.png");
+    background-repeat: no-repeat;
+    background-size: 400px 73px;
+    height: 90px;
+    grid-column: 2;
+    margin-top: 20px;
+}
+
+#holder td {
+    width: 35px;
+    height: 35px;
+}
+
+#tableHolder {
+    margin-left: 50px;
+    margin-top: 10px;
+    border-spacing: 5px;
+}
+
+#remain {
+    display: grid;
+    grid-template-columns: auto auto;
+    height: 516px;
+}
+
+#save {
+    height: 310px;
+    overflow: auto;
+    margin-left: 10px;
+}
+
+#error-message p {
+    height: 50px;
+    width: 300px;
+}
+
+#exchangeTiles {
+    height: 100px;
+    background-color: red;
+    color: white;
+    text-align: center;
+    padding-top: 75px;
+}
+
+#control {
+    grid-column: 2;
+}
+
+#choose {
+    width: 800px;
+    height: 227px;
+    margin: 0 auto;
+    background-color: bisque;
+}
+
+.no-close .ui-dialog-titlebar-close {
+    display: none;
+}
+
+#tableRemain, #tableRemain tr, #tableRemain td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#tableRemain th, #tableRemain td {
+    padding: 5px;
+}
+
+#tableBoard td img {
+    width: 31px;
+    height: 32px;
+    display: block;
+}
+
+button {
+    background-color: blue;
+    border: none;
+    color: white;
+    padding: 10px 35px;
+    font-size: 14px;
+    margin: 15px 10px;
+    cursor: pointer;
+}
+
+#example {
+    height: 144px;
+    width: 175px;
+}
