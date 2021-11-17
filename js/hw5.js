@@ -3,7 +3,7 @@
     GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
     Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
     Copyright (C) 2021 by Minh Le. 
-    Updated by ML on November 7, 2021 at 7:00pm
+    Updated by ML on November 17, 2021 at 11:00am
 */
 
 $(document).ready(function () {
@@ -44,6 +44,13 @@ $(document).ready(function () {
   #   It generate random tiles with given distribution
   #   For example, A with 9 that means 9 As in sampleSpaceLetter 
   #   There are 9 change of 100 to pick A
+  #   sampleSpaceLetter contains:
+  #   ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'D', 'D', 
+  #   'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'F', 'F', 'G', 'G', 'G', 
+  #   'H', 'H', 'I', 'I', 'I', 'I', 'I', 'I', 'I', 'I', 'I', 'J', 'K', 'L', 'L', 'L', 'L', 'M', 
+  #   'M', 'N', 'N', 'N', 'N', 'N', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'P', 'P', 'Q', 
+  #   'R', 'R', 'R', 'R', 'R', 'R', 'S', 'S', 'S', 'S', 'T', 'T', 'T', 'T', 'T', 'T', 'U', 'U', 
+  #   'U', 'U', 'V', 'V', 'W', 'W', 'X', 'Y', 'Y', 'Z', '_', '_']
   #   Random() is uniform (equal probability)  
   ###############################################################
   */
@@ -65,6 +72,7 @@ $(document).ready(function () {
   #   Store the result words (this variable is very important!)
   #   It will save the tiles on the board
   #   It stores exactly what are on the board as user's screen
+  #   myString contains 15x15 "*" at initialization
   ################################################################
   */
   var myString = [];
@@ -205,9 +213,9 @@ $(document).ready(function () {
   #####################################################################################
   #   Create the holder (rack)
   #   There is 7 tiles on the holder
-  #   data-status of img: if the tile on the board, it turn on; otherwise, turn off
-  #   data-status of td: if the tile on the holder, it turn on; otherwise, turn off
-  #   data-index-holder: determine where the tile belong on the rack (0 to 7)
+  #   data-status of img: if the tile is on the board, it turn on; otherwise, turn off
+  #   data-status of td: if the tile is on the holder, it turn on; otherwise, turn off
+  #   data-index-holder: determine where the tile belong to which rack (0 to 7)
   #   data-name: the name of the letter ("A-Z" and "_")
   #   accept: allow only one tile on the same square (td)
   #   coef: range that the tiles can be chosen. e.g: 10 means [0, 9], 100 means [0 - 99], etc
@@ -216,16 +224,20 @@ $(document).ready(function () {
   $("#holder").append("<table id='tableHolder'></table>");
 
   $("#tableHolder").append("<tr></tr>");
+  // Create 7 tiles on the rack
   for (i = 0; i < 7; i++) {
     var randomLetter = Math.floor(Math.random() * coef); // choose from index 0 to 99
     var nameLetter = sampleSpaceLetters[randomLetter];
     if (nameLetter != null) {
       ScrabbleTiles[nameLetter].remaining--;
       coef--;
+      // Remove the selected tiles from the sample space
       var index = sampleSpaceLetters.indexOf(nameLetter);
       sampleSpaceLetters.splice(index, 1);
     }
+    //console.log(sampleSpaceLetters)
 
+    // Check if the tile is blank or not
     if (nameLetter != "_") {
       $("#tableHolder tr").append(
         "<td data-status='on' data-index='" + i + "'><img data-name='" + nameLetter +
@@ -260,10 +272,12 @@ $(document).ready(function () {
   ########################################################################
   */
   $("#btnReset").click(function () {
-    if ($("#tableHolder td[data-status='off']").length > 0) {
+    // status = 'off' that means the tile is on the board
+    if ($("#tableHolder td[data-status='off']").length > 0) { // if tiles on the board
       // after the tiles go back the rack, status of td contains the tails is back to "on" 
       $("#tableHolder td[data-status='off']").attr("data-status", "on");
 
+      // Call back tiles to the rack
       $("img[data-status='on']").css({
         position: "relative",
         top: 0,
@@ -304,7 +318,7 @@ $(document).ready(function () {
 
       // Reset conditional variable (directions)
       resetVariables();
-    } else {
+    } else { // no tiles on the board
       printErrorMessages("No tiles on the board.");
     }
   });
@@ -412,6 +426,7 @@ $(document).ready(function () {
             }
           }
         } else {
+          // for debug
           printErrorMessages("error: blocking squares.");
         }
 
@@ -475,6 +490,94 @@ $(document).ready(function () {
     }
   });
 
+  /*
+  ####################################################
+  #   Button get new 7 tiles
+  ####################################################
+  */
+  $("#btnNew7Tiles").click(function () {
+    // status = 'off' that means the tile is on the board
+
+    // after the tiles go back the rack, status of td contains the tails is back to "on" 
+    $("#tableHolder td[data-status='off']").attr("data-status", "on");
+
+    // Call back tiles to the rack
+    $("img[data-status='on']").css({
+      position: "relative",
+      top: 0,
+      left: 0
+    });
+
+    // clear error messages
+    printErrorMessages("");
+
+    // Reset the board to accept tiles again
+    $("#tableBoard td").droppable('option', 'accept', "img");
+
+    // Clear display word and score
+    $("#myString").text("Word: ");
+    $("#score").text("Score: 0");
+
+    // Set status of td on the board to off when tiles leave it and come back to the rack
+    for (i = 0; i < $("img[data-status='on']").length; i++) {
+      var index = $("img[data-status='on']").eq(i).attr("data-index");
+      index = index.split("-");
+      var row = index[0];
+      var col = index[1];
+
+      //console.log($("img[data-status='on']").eq(i).attr("data-index"))
+      $("#tableBoard td[data-index='" + row + "-" + col + "']").attr("data-status", "off");
+      $("#tableBoard td[data-index='" + row + "-" + col + "']").removeAttr("data-name");
+      myString[row][col] = "*"; // after it come back to the rack, clear it on the memory (myString)
+    }
+
+    // remove attribute on the tiles
+    $("img").removeAttr("data-status");
+    $("img").removeAttr("data-index");
+
+    // Create new tiles on the rack
+    for (i = 0; i < 7; i++) {
+      var randomLetter = Math.floor(Math.random() * coef);
+      var nameLetter = sampleSpaceLetters[randomLetter];
+      //console.log(nameLetter);
+
+      if (nameLetter != null) {
+        if ($("#tableHolder img").eq(i).attr("data-name") != "Blank") {
+          ScrabbleTiles[nameLetter].remaining--;
+          ScrabbleTiles[$("#tableHolder img").eq(i).attr("data-name")].remaining++;
+          var index = sampleSpaceLetters.indexOf(nameLetter);
+
+          // remove letter from sample space
+          if (sampleSpaceLetters.length > 0) {
+            sampleSpaceLetters.splice(index, 1);
+            sampleSpaceLetters.splice(index, 0, $("#tableHolder img").eq(i).attr("data-name"));
+            updateRemainTable();
+          }
+
+          var indexDraggable = $("#tableHolder img").eq(i).attr("data-index-holder");
+
+          if (nameLetter != "_") {
+            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("data-name", nameLetter);
+            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-status");
+            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-index");
+          } else {
+            nameLetter = "Blank";
+            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("data-name", nameLetter);
+            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-status");
+            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-index");
+          }
+        }
+      } else {
+        printErrorMessages("There is no more letter.");
+      }
+
+      // Reset conditional variable (directions)
+      resetVariables();
+    }
+  });
+
   // display rules
   $("#btnRule").click(function () {
     $("#dialog-rules").dialog("open");
@@ -504,7 +607,7 @@ $(document).ready(function () {
       Object.keys(ScrabbleTiles)[i] + ".jpg'></li>");
   }
 
-  // Control how to choose a word, space tile means players can choose any tile
+  // Control how to choose a word, blank tile means players can choose any tile
   $("#dialog-message").dialog({
     dialogClass: "no-close", // no closed tag
     autoOpen: false, // no auto open
@@ -934,9 +1037,13 @@ $(document).ready(function () {
             "Once the tile is placed on the Scrabble board, it can not be moved. Take it back to the rack to move it."
           );
 
+          // Set the tile back to the rack
           ui.draggable.draggable("option", "revert", true);
 
+          // Delete it from the memory
           myString[row][col] = "*";
+
+          // Set the letter name back to old value
           myString[ui.draggable.attr("data-index")] = ui.draggable.attr("data-name");
           //console.log(myString[row]);
         } else {
@@ -1152,7 +1259,7 @@ $(document).ready(function () {
             printErrorMessages("There is no more letter.");
           }
         } else {
-          printErrorMessages("Cannot exchange space tile. Please choose another one.");
+          printErrorMessages("Cannot exchange blank tile. Please choose another one.");
         }
       } else {
         printErrorMessages("Cannot exchange the tile on the board. Take it back to the rack, then exchange it.");

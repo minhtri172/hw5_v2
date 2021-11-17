@@ -1,36 +1,51 @@
+<!--
+    File: index.html
+    GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
+    Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
+    Copyright (C) 2021 by Minh Le. 
+    Updated by ML on November 8, 2021 at 7:00pm
+-->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Scrabble Game</title>
+    <title>Scrabble Game - V2</title>
+    <!-- CSS -->
     <link href="css/hw5.css" rel="stylesheet">
     <link href="https://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css" rel="stylesheet">
 </head>
 
 <body>
     <div id="wrapper">
+        <!-- The board -->
         <div id="board"></div>
+        <!-- Word, Score, Total Score, Remaining table and saved words -->
         <div id="remain">
             <div id="display">
                 <p id="myString">Word:</p>
                 <p id="score">Score: 0</p>
                 <p id="totalScore">Total Score: 0</p>
             </div>
-            <div id="save">
-            </div>
+            <!-- Saved Words -->
+            <div id="save"></div>
+            <!-- Error messages -->
             <div id="error-message">
                 <p></p>
-                <button id="btnRule">Click here to see the rules</button>
             </div>
+            <!-- Exchange place -->
             <div id="exchangeTiles">Drop here to exchange tiles.</div>
         </div>
         <div id="holder"></div>
+        <!-- Button -->
         <div id="control">
             <button id="btnReset">Reset Tiles</button>
             <button id="btnSave">Save Word</button>
+            <button id="btnNew7Tiles">New 7 tiles</button>
             <button id="btnStartOver">Start Over</button>
+            <button id="btnRule">Click here to see the rules</button>
         </div>
+        <!-- Dialog -->
         <div id="dialog-message"></div>
         <div id="dialog-direction">
             <ul id='select-direction'>

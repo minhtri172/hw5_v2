@@ -1,9 +1,20 @@
+/*
+    File: hw5.css
+    GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
+    Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
+    Copyright (C) 2021 by Minh Le. 
+    Updated by ML on November 8, 2021 at 7:00pm
+*/
+
+/* Display wrapper as a grid with two columns 5:4 */
 #wrapper {
     display: grid;
     grid-template-columns: 5fr 4fr;
     min-width: 1200px;
+    max-width: 1400px;
 }
 
+/* Display the board with a given image */
 #board {
     background-image: url("../images/ScrabbleBoard.jpg");
     background-repeat: no-repeat;
@@ -12,24 +23,28 @@
     grid-row: 1/4;
 }
 
+/* Config the board */
 #tableBoard {
     border-collapse: collapse;
     margin-left: 90px;
     margin-top: 49px;
 }
 
+/* transparent to hide boder line */
 #board td {
     width: 31px;
     height: 32px;
-    border: 2px solid transparent;
+    border: 2px solid transparent; 
     /* background-color: aqua; */
 }
 
+/* Config image on the rack */
 #tableHolder img {
     width: 35px;
     height: 35px;
 }
 
+/* Config images where the players choose space letter */
 #dialog-message img {
     width: 61px;
     height: 61px;
@@ -46,6 +61,7 @@
     cursor: pointer;
 }
 
+/* Config the dialog where players choose directions */
 #dialog-direction li {
     display: inline;
     cursor: pointer;
@@ -56,6 +72,7 @@
     height: 100px;
 }
 
+/* Config the rack (holder) */
 #holder {
     background-image: url("../images/scrabble-tile-holder-406774_640.png");
     background-repeat: no-repeat;
@@ -76,23 +93,20 @@
     border-spacing: 5px;
 }
 
-#remain {
-    display: grid;
-    grid-template-columns: auto auto;
-    height: 516px;
-}
-
+/* Config the div that display saved words */
 #save {
     height: 310px;
     overflow: auto;
     margin-left: 10px;
 }
 
+/* Config error messages */
 #error-message p {
     height: 50px;
     width: 300px;
 }
 
+/* Config the div where the players drop and exchange new tiles */
 #exchangeTiles {
     height: 100px;
     background-color: red;
@@ -101,19 +115,26 @@
     padding-top: 75px;
 }
 
+/* Hold buttons */
 #control {
     grid-column: 2;
 }
 
-#choose {
-    width: 800px;
-    height: 227px;
-    margin: 0 auto;
-    background-color: bisque;
-}
-
+/* no closed icon of the dialogs */
 .no-close .ui-dialog-titlebar-close {
     display: none;
+}
+
+/* Display as grid (2 columns), separate word, score, total score, table remaining and saved words */
+#remain {
+    display: grid;
+    grid-template-columns: auto auto;
+    height: 516px;
+}
+
+/* Config the remaining table */
+#tableRemain {
+    width: 100%;
 }
 
 #tableRemain, #tableRemain tr, #tableRemain td {
@@ -125,12 +146,14 @@
     padding: 5px;
 }
 
+/* Config images (tiles) saved on the board */
 #tableBoard td img {
     width: 31px;
     height: 32px;
     display: block;
 }
 
+/* Config buttons */
 button {
     background-color: blue;
     border: none;
@@ -141,6 +164,7 @@ button {
     cursor: pointer;
 }
 
+/* Image example how to play the game */
 #example {
     height: 144px;
     width: 175px;
