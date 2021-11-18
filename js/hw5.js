@@ -76,8 +76,8 @@ $(document).ready(function () {
   ################################################################
   */
   var myString = [];
-  for (i = 0; i < 15; i++) {
-    myString[i] = new Array(15).fill("*");
+  for (i = 0; i < 17; i++) {
+    myString[i] = new Array(17).fill("*");
   }
 
   //console.log(myString)
@@ -127,83 +127,83 @@ $(document).ready(function () {
   */
   $("#board").append("<table id='tableBoard'></table>");
 
-  for (i = 0; i < 15; i++) {
+  for (i = 1; i <= 15; i++) {
     $("#tableBoard").append("<tr></tr>");
-    for (j = 0; j < 15; j++) {
+    for (j = 1; j <= 15; j++) {
       // row 1 and row 15
-      if (i == 0 || i == 14) {
-        if (j % 7 == 0) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-3' data-status='off'></td>");
-        } else if (j == 3 || j == 11) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+      if (i == 1 || i == 15) {
+        if (j == 1 || j == 8 || j == 15) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='word-3' data-status='off'></td>");
+        } else if (j == 4 || j == 12) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
         } else {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         }
       }
       // row 2 and row 14
-      if (i == 1 || i == 13) {
-        if (j == 1 || j == 13) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
-        } else if (j == 5 || j == 9) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-3' data-status='off'></td>");
+      if (i == 2 || i == 14) {
+        if (j == 2 || j == 14) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
+        } else if (j == 6 || j == 10) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='letter-3' data-status='off'></td>");
         } else {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         }
       }
       // row 3 and row 13
-      if (i == 2 || i == 12) {
-        if (j == 2 || j == 12) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
-        } else if (j == 6 || j == 8) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+      if (i == 3 || i == 13) {
+        if (j == 3 || j == 13) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
+        } else if (j == 7 || j == 9) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
         } else {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         }
       }
       // row 4 and row 12
-      if (i == 3 || i == 11) {
-        if (j % 7 == 0) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
-        } else if (j == 3 || j == 11) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
+      if (i == 4 || i == 12) {
+        if (j == 1 || j == 8 || j == 15) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+        } else if (j == 4 || j == 12) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
         } else {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         }
       }
       // row 5 and row 11
-      if (i == 4 || i == 10) {
-        if (j == 4 || j == 10) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
+      if (i == 5 || i == 11) {
+        if (j == 5 || j == 11) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='word-2' data-status='off'></td>");
         } else {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         }
       }
       // row 6 and row 10
-      if (i == 5 || i == 9) {
-        if (j == 1 || j == 5 || j == 9 || j == 13) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-3' data-status='off'></td>");
+      if (i == 6 || i == 10) {
+        if (j == 2 || j == 6 || j == 10 || j == 14) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='letter-3' data-status='off'></td>");
         } else {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         }
       }
       // row 7 and row 9
-      if (i == 6 || i == 8) {
-        if (j == 2 || j == 6 || j == 8 || j == 12) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+      if (i == 7 || i == 9) {
+        if (j == 3 || j == 7 || j == 9 || j == 13) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
         } else {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         }
       }
       // row 8 (center)
-      if (i == 7) {
-        if (j == 0 || j == 14) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='word-3' data-status='off'></td>");
-        } else if (j == 3 || j == 11) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
-        } else if (j == 7) {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+      if (i == 8) {
+        if (j == 1 || j == 15) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='word-3' data-status='off'></td>");
+        } else if (j == 4 || j == 12) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-price='letter-2' data-status='off'></td>");
+        } else if (j == 8) {
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         } else {
-          $("#board tr").eq(i).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
+          $("#board tr").eq(i - 1).append("<td data-index='" + i + "-" + j + "' data-status='off'></td>");
         }
       }
     }
@@ -935,8 +935,9 @@ $(document).ready(function () {
 
       //console.log("row-col in the droppable board: " + row + "-" + col);
       myString[row][col] = letterResult;
+     
       // console.log(myString);
-      if (row == 7 && col == 7) {
+      if (row == 8 && col == 8) {
         // START GAME HERE
         startGame = true;
         firstTile = true;
@@ -950,9 +951,9 @@ $(document).ready(function () {
 
       // determine if play go left-right or up-down
       if (changeDirection && !acceptTile) {
-        for (i = 1; i < 15; i++) {
+        for (i = 1; i <= 15; i++) {
           count++;
-          if ((col + i) < 15) {
+          if ((col + i) <= 15) {
             if ($("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").attr("data-status") == "on") {
               if (count == 1) {
                 saveRow = row;
@@ -964,9 +965,9 @@ $(document).ready(function () {
           }
         }
         count = 0;
-        for (i = 1; i < 15; i++) {
+        for (i = 1; i <= 15; i++) {
           count++;
-          if ((col - i) >= 0) {
+          if ((col - i) >= 1) {
             if ($("#tableBoard td[data-index='" + row + "-" + (col - i) + "']").attr("data-status") == "on") {
               if (count == 1) {
                 direction = leftRight;
@@ -978,9 +979,9 @@ $(document).ready(function () {
           }
         }
         count = 0;
-        for (i = 1; i < 15; i++) {
+        for (i = 1; i <= 15; i++) {
           count++;
-          if ((row + i) < 15) {
+          if ((row + i) <= 15) {
             if ($("#tableBoard td[data-index='" + (row + i) + "-" + col + "']").attr("data-status") == "on") {
               if (count == 1) {
                 saveCol = col;
@@ -992,7 +993,7 @@ $(document).ready(function () {
           }
         }
         count = 0;
-        for (i = 1; i < 15; i++) {
+        for (i = 1; i <= 15; i++) {
           count++;
           if ((row - i) >= 0) {
             if ($("#tableBoard td[data-index='" + (row - i) + "-" + col + "']").attr("data-status") == "on") {
