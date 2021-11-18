@@ -3,7 +3,7 @@
     GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
     Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
     Copyright (C) 2021 by Minh Le. 
-    Updated by ML on November 17, 2021 at 11:00am
+    Updated by ML on November 18, 2021 at 11:00pm
 */
 
 $(document).ready(function () {
@@ -497,85 +497,54 @@ $(document).ready(function () {
   */
   $("#btnNew7Tiles").click(function () {
     // status = 'off' that means the tile is on the board
-
-    // after the tiles go back the rack, status of td contains the tails is back to "on" 
-    $("#tableHolder td[data-status='off']").attr("data-status", "on");
-
-    // Call back tiles to the rack
-    $("img[data-status='on']").css({
-      position: "relative",
-      top: 0,
-      left: 0
-    });
+    // status = 'on' that means the tile is on the rack
 
     // clear error messages
     printErrorMessages("");
 
-    // Reset the board to accept tiles again
-    $("#tableBoard td").droppable('option', 'accept', "img");
-
-    // Clear display word and score
-    $("#myString").text("Word: ");
-    $("#score").text("Score: 0");
-
-    // Set status of td on the board to off when tiles leave it and come back to the rack
-    for (i = 0; i < $("img[data-status='on']").length; i++) {
-      var index = $("img[data-status='on']").eq(i).attr("data-index");
-      index = index.split("-");
-      var row = index[0];
-      var col = index[1];
-
-      //console.log($("img[data-status='on']").eq(i).attr("data-index"))
-      $("#tableBoard td[data-index='" + row + "-" + col + "']").attr("data-status", "off");
-      $("#tableBoard td[data-index='" + row + "-" + col + "']").removeAttr("data-name");
-      myString[row][col] = "*"; // after it come back to the rack, clear it on the memory (myString)
-    }
-
-    // remove attribute on the tiles
-    $("img").removeAttr("data-status");
-    $("img").removeAttr("data-index");
-
     // Create new tiles on the rack
     for (i = 0; i < 7; i++) {
-      var randomLetter = Math.floor(Math.random() * coef);
-      var nameLetter = sampleSpaceLetters[randomLetter];
-      //console.log(nameLetter);
+      if ($("#tableHolder td").eq(i).attr("data-status") == "on") {
+        var randomLetter = Math.floor(Math.random() * coef);
+        var nameLetter = sampleSpaceLetters[randomLetter];
+        //console.log(nameLetter);
 
-      if (nameLetter != null) {
-        if ($("#tableHolder img").eq(i).attr("data-name") != "Blank") {
-          ScrabbleTiles[nameLetter].remaining--;
-          ScrabbleTiles[$("#tableHolder img").eq(i).attr("data-name")].remaining++;
-          var index = sampleSpaceLetters.indexOf(nameLetter);
+        if (nameLetter != null) {
+          if ($("#tableHolder img").eq(i).attr("data-name") != "Blank") {
+            ScrabbleTiles[nameLetter].remaining--;
+            ScrabbleTiles[$("#tableHolder img").eq(i).attr("data-name")].remaining++;
+            var index = sampleSpaceLetters.indexOf(nameLetter);
 
-          // remove letter from sample space
-          if (sampleSpaceLetters.length > 0) {
-            sampleSpaceLetters.splice(index, 1);
-            sampleSpaceLetters.splice(index, 0, $("#tableHolder img").eq(i).attr("data-name"));
-            updateRemainTable();
+            // remove letter from sample space
+            if (sampleSpaceLetters.length > 0) {
+              sampleSpaceLetters.splice(index, 1);
+              sampleSpaceLetters.splice(index, 0, $("#tableHolder img").eq(i).attr("data-name"));
+              updateRemainTable();
+            }
+
+            var indexDraggable = $("#tableHolder img").eq(i).attr("data-index-holder");
+
+            if (nameLetter != "_") {
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("data-name", nameLetter);
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-status");
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-index");
+            } else {
+              nameLetter = "Blank";
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("data-name", nameLetter);
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-status");
+              $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-index");
+            }
           }
-
-          var indexDraggable = $("#tableHolder img").eq(i).attr("data-index-holder");
-
-          if (nameLetter != "_") {
-            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("data-name", nameLetter);
-            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
-            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-status");
-            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-index");
-          } else {
-            nameLetter = "Blank";
-            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("data-name", nameLetter);
-            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").attr("src", "./images/Scrabble_Tile_" + nameLetter + ".jpg");
-            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-status");
-            $("#tableHolder img[data-index-holder='" + indexDraggable + "']").removeAttr("data-index");
-          }
+        } else {
+          printErrorMessages("There is no more letter.");
         }
-      } else {
-        printErrorMessages("There is no more letter.");
+        $("#tableHolder td").eq(i).attr("data-status", "on");
       }
-
-      // Reset conditional variable (directions)
-      resetVariables();
     }
+    // Reset conditional variable (directions)
+    resetVariables();
   });
 
   // display rules
@@ -935,7 +904,7 @@ $(document).ready(function () {
 
       //console.log("row-col in the droppable board: " + row + "-" + col);
       myString[row][col] = letterResult;
-     
+
       // console.log(myString);
       if (row == 8 && col == 8) {
         // START GAME HERE
