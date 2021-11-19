@@ -1113,6 +1113,13 @@ $(document).ready(function () {
     drop: function (event, ui) {
       //console.log("accept items from board");
       printErrorMessages("");
+      if (ui.draggable.attr("data-index") == "8-8") {
+        if ($("img[data-status='on']").length > 1) {
+          ui.draggable.draggable("option", "revert", true);
+          printErrorMessages("Cannot take back the first tile when there are other tiles on the board.");
+          return;
+        }
+      }
       // console.log(myString)
       $(this).css("box-shadow", "");
 
