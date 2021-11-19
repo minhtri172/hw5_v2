@@ -1067,7 +1067,7 @@ $(document).ready(function () {
               // Delete and set back value to myString
               myString[row][col] = "*";
 
-              console.log(myString);
+              //console.log(myString);
               printErrorMessages("Do not allow space between two letters.");
               //console.log("After remove:");
               //console.log(myString);
@@ -1087,7 +1087,7 @@ $(document).ready(function () {
             } else if (direction == upDown) {
               printErrorMessages("Only allow up-down move.");
             } else {
-              printErrorMessages("Do not allow diagonal move.");
+              printErrorMessages("Do not allow diagonal move or a space between two letters.");
             }
           }
         }
