@@ -397,7 +397,7 @@ $(document).ready(function () {
         // Block the head and the tail of the word
         // Do not allow the tile at the head and tail of a saved word
         // Go left-right, up-down, if found "*", block this square
-        if (direction == leftRight) {
+        /*if (direction == leftRight) {
           for (i = 0; i < 15; i++) {
             if ($("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").attr("data-save") == null) {
               $("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").droppable("disable");
@@ -428,7 +428,7 @@ $(document).ready(function () {
         } else {
           // for debug
           printErrorMessages("error: blocking squares.");
-        }
+        }*/
 
         // set the image back to before on the board
         $("img").removeAttr("data-index");
