@@ -72,7 +72,11 @@ $(document).ready(function () {
   #   Store the result words (this variable is very important!)
   #   It will save the tiles on the board
   #   It stores exactly what are on the board as user's screen
-  #   myString contains 15x15 "*" at initialization
+  #   myString contains 17x17 "*" at initialization
+  #   It should be 15x15, but there is a bug
+  #   I check if there are letters in myString, it will go out of index
+  #   and get error "bound of index", so I changed to 17x17
+  #   The square outside helps to fix error "bound of index"
   ################################################################
   */
   var myString = [];
@@ -569,15 +573,15 @@ $(document).ready(function () {
   }
 
   // Create choose table letter when play has blank
-  $("#dialog-message").append("<ul id='selectables'></ul>");
+  $("#dialog-blank").append("<ul id='selectables'></ul>");
   for (i = 0; i < Object.keys(ScrabbleTiles).length - 1; i++) {
-    $("#dialog-message ul").append("<li data-name='" +
+    $("#dialog-blank ul").append("<li data-name='" +
       Object.keys(ScrabbleTiles)[i] + "'><img src='./images/Scrabble_Tile_" +
       Object.keys(ScrabbleTiles)[i] + ".jpg'></li>");
   }
 
   // Control how to choose a word, blank tile means players can choose any tile
-  $("#dialog-message").dialog({
+  $("#dialog-blank").dialog({
     dialogClass: "no-close", // no closed tag
     autoOpen: false, // no auto open
     modal: true, // can drag move around
@@ -644,18 +648,18 @@ $(document).ready(function () {
           $("li[class='ui-selectee ui-selected']").css("background-color", "black");
           $(this).dialog("close"); // close dialog
         } else {
-          if ($("#dialog-message p").length) {
-            $("#dialog-message p").remove();
+          if ($("#dialog-blank p").length) {
+            $("#dialog-blank p").remove();
           }
-          $("#dialog-message").append("<p>Please choose one letter.</p>")
-          $("#dialog-message p").css("color", "red");
+          $("#dialog-blank").append("<p>Please choose one letter.</p>")
+          $("#dialog-blank p").css("color", "red");
         }
 
       }
     }
   });
 
-  // Selectable for dialog-message
+  // Selectable for dialog-blank
   $("#selectables").selectable({
     selected: function (event, ui) { // selected
       chosenLetter = $(ui.selected).attr("data-name");
@@ -663,8 +667,8 @@ $(document).ready(function () {
       if (chosenLetter != null) {
         // Set the chosen letter
         // data-previous-letter: used for change the tiles back to space if it comes back to the rack
-        if ($("#dialog-message p").length) {
-          $("#dialog-message p").remove();
+        if ($("#dialog-blank p").length) {
+          $("#dialog-blank p").remove();
         }
         $("img[data-status='on'][data-name='Blank']").attr("data-previous-letter", "_");
         $("img[data-status='on'][data-name='Blank']").attr("src", "./images/Scrabble_Tile_" + chosenLetter + ".jpg")
@@ -892,10 +896,6 @@ $(document).ready(function () {
 
       var letterResult = ui.draggable.attr("data-name"); // get letter
 
-      if (letterResult == "Blank") {
-        $("#dialog-message").dialog("open");
-      }
-
       // Get index of the letter (where it is)
       var index = $(this).attr("data-index");
       var tempIndex = index.split("-");
@@ -1020,6 +1020,10 @@ $(document).ready(function () {
           if (saveRow == row || saveCol == col || firstTile) {
             if (isAdjacent(row, col)) {
               // HERE IS VALID MOVE
+              if (letterResult == "Blank") {
+                $("#dialog-blank").dialog("open");
+              }
+
               if (!firstTile) {
                 acceptTile = true;
                 changeDirection = false;
@@ -1133,11 +1137,10 @@ $(document).ready(function () {
       }
 
       // Set position fit to the rack
-      var offset = $(this).offset();
       ui.draggable.css({
-        position: 'absolute',
-        top: offset.top,
-        left: offset.left + 2
+        position: 'relative',
+        top: 0,
+        left: 0
       });
 
       $("#tableBoard td[data-index='" + ui.draggable.attr("data-index") + "']").attr("data-status", "off");
@@ -1258,11 +1261,11 @@ $(document).ready(function () {
   function resetVariables() {
     // Reset conditional variable (directions)
     //console.log(changeDirection)
-    if ($("#tableHolder td[data-status='off'").length == 0) {
+    if ($("#tableHolder td[data-status='off'").length == 0) { // all tiles on the rack
       saveCol = -1;
       saveRow = -1;
 
-      if ($("#tableBoard td[data-save='on']").length == 0) {
+      if ($("#tableBoard td[data-save='on']").length == 0) { // No save word on the board
         startGame = false;
       }
 
@@ -1272,24 +1275,31 @@ $(document).ready(function () {
       direction = 0;
     }
 
-    if ($("#tableHolder td[data-status='off'").length == 1) {
+    if ($("#tableHolder td[data-status='off'").length == 1) { // There is a first tile on the board
       saveCol = -1;
       saveRow = -1;
       acceptTile = false;
       changeDirection = true;
-      if ($("#tableBoard td[data-save='on']").length == 0) {
+      if ($("#tableBoard td[data-save='on']").length == 0) { // No save word on the board
         direction = 0;
       }
     }
 
-    if ($("#tableHolder td[data-status='off'").length == 7) {
+    if ($("#tableHolder td[data-status='on'").length == 7) { // All tiles on the board
       $("#myString").text("Word: ");
       $("#score").text("Score: 0");
     }
     //console.log(changeDirection)
   }
 
-  // Check if there must be two blocks are adjacent
+  /* 
+  ##################################################################
+  #   Check if there must be two blocks are adjacent
+  #   return true if no space between two letters
+  #   return false if there is space (invalid move)
+  #   Idea: find the * between two letter (A*A)
+  ##################################################################
+  */
   function isAdjacent(row, col) {
     // Check error (no allow space between letters)
     var firstLetter = false;
@@ -1298,16 +1308,16 @@ $(document).ready(function () {
     //console.log(direction)
 
     if (direction == leftRight) {
-      if (myString[row][col - 1] != "*" || myString[row][col + 1] != "*") {
+      if (myString[row][col - 1] != "*" || myString[row][col + 1] != "*") { // there are two letters
         return true;
       }
-      for (var i = 0; i < myString.length - 1; i++) {
+      for (var i = 0; i < myString.length - 1; i++) { // Skip * at begining
         if (!firstLetter) {
           if (myString[row][i] != "*") {
             firstLetter = true;
           }
         } else {
-          if (myString[row][i] == "*" && myString[row][i + 1] != "*") {
+          if (myString[row][i] == "*" && myString[row][i + 1] != "*") { // check * between two letters
             return false;
           }
         }
@@ -1350,9 +1360,17 @@ $(document).ready(function () {
   /*
   #############################################################################################
   #   Display the word
+  #############################################################################################
+  #   For left-right direction:
   #   If the tile on the right, go left the memory(myString), then revert it
   #   if the tile on the left, go right the memory(myString)
   #   if the tile on the middle, go left the memory(myString) and go right the memory(myString)
+  #   Then, return the string result
+  ###############################################################################################   
+  #   For up-down direction:
+  #   If the tile up position, go down the memory(myString)
+  #   if the tile down position, go up the memory(myString), then revert it
+  #   if the tile on the middle, go up the memory(myString) and go down the memory(myString)
   #   Then, return the string result
   ################################################################################################
   */
@@ -1478,15 +1496,15 @@ $(document).ready(function () {
   }
 
   /*
-  ###################################################################
+  ##########################################################################
   #   Determine score
   #   Used the letters are saved on the board <td> tag
+  #   The tag contains two values: condition (letter or word) and x2 or x3
   #   Then calculate the score
-  ###################################################################
+  ##########################################################################
   */
   function score(row, col) {
-    var score = 0;
-    //var status = $("img[data-status='on']");
+    var score = 0; // score of a valid word
     var condition; // word or letter
     var wordPrice = []; // store array of x2 or x3
     var price; // x2 or x3
@@ -1661,10 +1679,10 @@ $(document).ready(function () {
     //console.log(startGame);
 
     // Get the word from memory (myString)
-    if ($("#tableHolder td[data-status='off']").length == 1 && !startGame) {
+    if ($("#tableHolder td[data-status='off']").length == 1 && !startGame) { // if it is a first tile on the board
       myWord = myString[row][col];
     } else {
-      if (direction == leftRight) {
+      if (direction == leftRight) { // left-right direction
         for (i = 0; i < 15; i++) {
           if (myString[row][col + 1] != "*") {
             if (myString[row][col + i] != "*") {
@@ -1675,7 +1693,6 @@ $(document).ready(function () {
           }
 
           if (myString[row][col - 1] != "*") {
-            goRight = true;
             if (myString[row][col - i] != "*") {
               myWord += myString[row][col - i].toLowerCase();
             } else {
@@ -1692,7 +1709,7 @@ $(document).ready(function () {
         } else {
           return false;
         }
-      } else if (direction == upDown) {
+      } else if (direction == upDown) { // up-down direction
         //console.log(row + ":" + col);
         //console.log(myString);
         for (i = 0; i < 15; i++) {
@@ -1705,7 +1722,6 @@ $(document).ready(function () {
           }
 
           if (myString[row - 1][col] != "*") {
-            goRight = true;
             if (myString[row - i][col] != "*") {
               myWord += myString[row - i][col].toLowerCase();
             } else {

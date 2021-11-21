@@ -45,16 +45,16 @@
 }
 
 /* Config images where the players choose space letter */
-#dialog-message img {
+#dialog-blank img {
     width: 61px;
     height: 61px;
 }
 
-#dialog-message ul, #dialog-direction ul {
+#dialog-blank ul, #dialog-direction ul {
     list-style-type: none;
 }
 
-#dialog-message li, #dialog-direction li {
+#dialog-blank li, #dialog-direction li {
     display: inline;
     margin-left: 4px;
     background-color: black;
@@ -76,7 +76,7 @@
 #holder {
     background-image: url("../images/scrabble-tile-holder-406774_640.png");
     background-repeat: no-repeat;
-    background-size: 400px 73px;
+    background-size: 400px 94px;
     height: 90px;
     grid-column: 2;
     margin-top: 20px;
@@ -88,9 +88,9 @@
 }
 
 #tableHolder {
-    margin-left: 50px;
-    margin-top: 10px;
-    border-spacing: 5px;
+    margin-left: 42px;
+    margin-top: 25px;
+    border-spacing: 8px;
 }
 
 /* Config the div that display saved words */
