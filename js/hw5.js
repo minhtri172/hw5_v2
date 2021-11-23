@@ -3,7 +3,7 @@
     GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
     Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
     Copyright (C) 2021 by Minh Le. 
-    Updated by ML on November 18, 2021 at 11:00pm
+    Updated by ML on November 23, 2021 at 11:00pm
 */
 
 $(document).ready(function () {
@@ -103,13 +103,13 @@ $(document).ready(function () {
 
   // Set dictionary to dict (data get from the file dict.txt)
   // Reference from : https://johnresig.com/blog/dictionary-lookups-in-javascript/
-  $.get("dict/dict.txt", function (txt) {
-    // Get an array of all the words
-    var words = txt.split("\n");
+  $.get("dict/dict.txt", function (file) {
+    // Get words
+    var words = file.split("\n");
     //console.log(words);
 
-    // And add them as properties to the dictionary lookup
-    // This will allow for fast lookups later
+    // Create an boolean array to store words
+    // Set all words to true, then use it to check whether the word in dictionary 
     for (i = 0; i < words.length; i++) {
       dict[words[i]] = true;
     }
@@ -774,7 +774,7 @@ $(document).ready(function () {
   $("#dialog-confirm").dialog({
     autoOpen: false,
     height: "auto",
-    width: 400,
+    width: "400",
     modal: true,
     draggable: false,
     buttons: {
@@ -1742,17 +1742,19 @@ $(document).ready(function () {
   }
 
   // Find the word in the dictionary
+  // Reference from : https://johnresig.com/blog/dictionary-lookups-in-javascript/
   function findWord(word) {
     //console.log("word search: " + word);
 
     // If the word on the dictionary, return it
     if (word.length > 1) {
-      if (dict[word]) {
+      if (dict[word]) { // if found the word
         return word;
       }
     }
 
-    // if no, return nothing
+    // if go here that means not found the word, dict[word] == null
+    // if not, return nothing
     return "";
   }
 
