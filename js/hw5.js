@@ -398,42 +398,6 @@ $(document).ready(function () {
           )
         }
 
-        // Block the head and the tail of the word
-        // Do not allow the tile at the head and tail of a saved word
-        // Go left-right, up-down, if found "*", block this square
-        /*if (direction == leftRight) {
-          for (i = 0; i < 15; i++) {
-            if ($("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").attr("data-save") == null) {
-              $("#tableBoard td[data-index='" + row + "-" + (col + i) + "']").droppable("disable");
-              break;
-            }
-          }
-
-          for (i = 0; i < 15; i++) {
-            if ($("#tableBoard td[data-index='" + row + "-" + (col - i) + "']").attr("data-save") == null) {
-              $("#tableBoard td[data-index='" + row + "-" + (col - i) + "']").droppable("disable");
-              break;
-            }
-          }
-        } else if (direction == upDown) {
-          for (i = 0; i < 15; i++) {
-            if ($("#tableBoard td[data-index='" + (row - i) + "-" + col + "']").attr("data-save") == null) {
-              $("#tableBoard td[data-index='" + (row - i) + "-" + col + "']").droppable("disable");
-              break;
-            }
-          }
-
-          for (i = 0; i < 15; i++) {
-            if ($("#tableBoard td[data-index='" + (row + i) + "-" + col + "']").attr("data-save") == null) {
-              $("#tableBoard td[data-index='" + (row + i) + "-" + col + "']").droppable("disable");
-              break;
-            }
-          }
-        } else {
-          // for debug
-          printErrorMessages("error: blocking squares.");
-        }*/
-
         // set the image back to before on the board
         $("img").removeAttr("data-index");
         $("img[data-status='on']").removeAttr("data-previous-letter");
