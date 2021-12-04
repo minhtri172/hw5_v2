@@ -639,8 +639,9 @@ $(document).ready(function () {
           //console.log(acceptTile)
           // Display word and score
           if (direction != 0 && acceptTile || $("#tableHolder td[data-status='off']").length == 1) {
-            $("#myString").text("Word: " + displayString(row, col));
-            $("#score").text("Score: " + score(row, col));
+            var my_word = displayString(row, col)
+            $("#myString").text("Word: " + my_word);
+            $("#score").text("Score: " + score(row, col, my_word));
           }
 
           chosenLetter = null; // set chosen letter to null means no letter is chosen
@@ -743,8 +744,9 @@ $(document).ready(function () {
           var col = index[1];
           row = parseInt(row);
           col = parseInt(col);
-          $("#myString").text("Word: " + displayString(row, col));
-          $("#score").text("Score: " + score(row, col));
+          var my_word = displayString(row, col)
+          $("#myString").text("Word: " + my_word);
+          $("#score").text("Score: " + score(row, col, my_word));
         }
         $("#select-direction li[class='ui-selectee ui-selected']").css("background-color", "red");
       } else {
@@ -1053,11 +1055,12 @@ $(document).ready(function () {
 
               // Display string result
               //console.log(direction)
-              $("#myString").text("Word: " + displayString(row, col));
+              var my_word = displayString(row, col);
+              $("#myString").text("Word: " + my_word);
               //console.log("myString: " + myString[row]);
 
               // Display Score
-              $("#score").text("Score: " + score(row, col));
+              $("#score").text("Score: " + score(row, col, my_word));
 
               // Does not accept two letters on the same square
               $(this).droppable('option', 'accept', ui.draggable);
@@ -1173,9 +1176,9 @@ $(document).ready(function () {
             row--;
           }
         }
-
-        $("#myString").text("Word: " + displayString(row, col));
-        $("#score").text("Score: " + score(row, col));
+        var my_word = displayString(row, col);
+        $("#myString").text("Word: " + my_word);
+        $("#score").text("Score: " + score(row, col, my_word));
       }
 
       // Reset conditional variable (directions)
@@ -1504,7 +1507,7 @@ $(document).ready(function () {
   #   Then calculate the score
   ##########################################################################
   */
-  function score(row, col) {
+  function score(row, col, my_word) {
     var score = 0; // score of a valid word
     var condition; // word or letter
     var wordPrice = []; // store array of x2 or x3
@@ -1514,7 +1517,7 @@ $(document).ready(function () {
     //console.log(direction)
     //checkWords(row, col)
     //DEBUG
-    if (checkWords(row, col)) {
+    if (findWord(my_word)) {
       isValidWord = true;
       if (direction == leftRight) { // left-right
         for (i = 0; i < 15; i++) {
@@ -1668,95 +1671,22 @@ $(document).ready(function () {
     }
   }
 
-  // Check valid words
-  function checkWords(row, col) {
-    var myWord = "";
-    var i;
-
-    //console.log("CHECK WORD")
-    //console.log("row: " + row)
-    //console.log("col: " + col)
-    //console.log("direction: " + direction)
-    //console.log(startGame);
-
-    // Get the word from memory (myString)
-    if ($("#tableHolder td[data-status='off']").length == 1 && !startGame) { // if it is a first tile on the board
-      myWord = myString[row][col];
-    } else {
-      if (direction == leftRight) { // left-right direction
-        for (i = 0; i < 15; i++) {
-          if (myString[row][col + 1] != "*") {
-            if (myString[row][col + i] != "*") {
-              myWord += myString[row][col + i].toLowerCase();
-            } else {
-              break;
-            }
-          }
-
-          if (myString[row][col - 1] != "*") {
-            if (myString[row][col - i] != "*") {
-              myWord += myString[row][col - i].toLowerCase();
-            } else {
-              myWord = myWord.split("").reverse().join("");
-              break;
-            }
-          }
-        }
-
-        //console.log("myWord:" + myWord);
-
-        if (findWord(myWord) != "") {
-          return true;
-        } else {
-          return false;
-        }
-      } else if (direction == upDown) { // up-down direction
-        //console.log(row + ":" + col);
-        //console.log(myString);
-        for (i = 0; i < 15; i++) {
-          if (myString[row + 1][col] != "*") {
-            if (myString[row + i][col] != "*") {
-              myWord += myString[row + i][col].toLowerCase();
-            } else {
-              break;
-            }
-          }
-
-          if (myString[row - 1][col] != "*") {
-            if (myString[row - i][col] != "*") {
-              myWord += myString[row - i][col].toLowerCase();
-            } else {
-              myWord = myWord.split("").reverse().join("");
-              break;
-            }
-          }
-        }
-        //console.log("myWord:" + myWord);
-      }
-
-      if (findWord(myWord) != "") {
-        return true;
-      } else {
-        return false;
-      }
-    }
-  }
-
   // Find the word in the dictionary
   // Reference from : https://johnresig.com/blog/dictionary-lookups-in-javascript/
   function findWord(word) {
     //console.log("word search: " + word);
+    word = word.toLowerCase()
 
-    // If the word on the dictionary, return it
+    // If the word on the dictionary
     if (word.length > 1) {
-      if (dict[word]) { // if found the word
-        return word;
+      if (dict[word]) { // if found the word, return true
+        return true;
       }
     }
 
-    // if go here that means not found the word, dict[word] == null
-    // if not, return nothing
-    return "";
+    // if go here that means not found the word
+    // if not, return false
+    return false;
   }
 
   // print error messages
