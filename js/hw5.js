@@ -3,7 +3,7 @@
     GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
     Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
     Copyright (C) 2021 by Minh Le. 
-    Updated by ML on November 23, 2021 at 11:00pm
+    Updated by ML on December 3, 2021 at 8:00pm
 */
 
 $(document).ready(function () {
@@ -1261,6 +1261,7 @@ $(document).ready(function () {
   function resetVariables() {
     // Reset conditional variable (directions)
     //console.log(changeDirection)
+    chosenDirection = null; // reset chosen direction
     if ($("#tableHolder td[data-status='off'").length == 0) { // all tiles on the rack
       saveCol = -1;
       saveRow = -1;
