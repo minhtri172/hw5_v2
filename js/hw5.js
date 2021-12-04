@@ -556,10 +556,11 @@ $(document).ready(function () {
         if (chosenLetter != null) {
           // A letter is chosen
           //console.log(chosenLetter)
+          var index = $("img[data-status='on'][data-name='Blank']").attr("data-index");
           $("img[data-status='on'][data-name='Blank']").attr("data-name", chosenLetter);
 
           // Set the chosen letter to memory (myString)
-          var index = $("img[data-status='on'][data-name='" + chosenLetter + "']").attr("data-index");
+          
           if (index != null) {
             var tempIndex = index.split("-");
             var row = parseInt(tempIndex[0]);
