@@ -1496,7 +1496,7 @@ $(document).ready(function () {
     //console.log(direction)
     //checkWords(row, col)
     //DEBUG
-    if (true) {
+    if (checkWords(row, col)) {
       isValidWord = true;
       if (direction == leftRight) { // left-right
         for (i = 0; i < 15; i++) {
