@@ -1101,6 +1101,7 @@ $(document).ready(function () {
           if (ui.draggable.attr("data-index") == "8-8") {
             if ($("img[data-status='on']").length > 1) {
               ui.draggable.draggable("option", "revert", true);
+              myString[row][col] = ui.draggable.attr("data-name");
               printErrorMessages("Cannot take back the first tile when there are other tiles on the board.");
               return;
             }
@@ -1320,7 +1321,7 @@ $(document).ready(function () {
           }
         }
       }
-      console.log(myString);
+      //console.log(myString);
       return true;
     } else {
       return true; // first tile
