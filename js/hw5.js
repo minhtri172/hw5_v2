@@ -560,7 +560,7 @@ $(document).ready(function () {
           $("img[data-status='on'][data-name='Blank']").attr("data-name", chosenLetter);
 
           // Set the chosen letter to memory (myString)
-          
+
           if (index != null) {
             var tempIndex = index.split("-");
             var row = parseInt(tempIndex[0]);
@@ -1085,34 +1085,6 @@ $(document).ready(function () {
     drop: function (event, ui) {
       //console.log("accept items from board");
       printErrorMessages("");
-      if (ui.draggable.attr("data-index") == "8-8") {
-        if ($("img[data-status='on']").length > 1) {
-          ui.draggable.draggable("option", "revert", true);
-          printErrorMessages("Cannot take back the first tile when there are other tiles on the board.");
-          return;
-        }
-      }
-      // console.log(myString)
-      $(this).css("box-shadow", "");
-
-      $(this).attr("data-status", "on");
-
-      // If the tile is space, take it back to the space image
-      var previousLetter = ui.draggable.attr("data-previous-letter");
-      if (previousLetter != null) {
-        ui.draggable.attr("src", "./images/Scrabble_Tile_Blank.jpg");
-        ui.draggable.attr("data-name", "Blank");
-      }
-
-      // Set position fit to the rack
-      ui.draggable.css({
-        position: 'relative',
-        top: 0,
-        left: 0
-      });
-
-      $("#tableBoard td[data-index='" + ui.draggable.attr("data-index") + "']").attr("data-status", "off");
-      $("#tableBoard td[data-index='" + ui.draggable.attr("data-index") + "']").removeAttr("data-name");
 
       var index = ui.draggable.attr("data-index");
       var tempIndex, row, col;
@@ -1124,36 +1096,75 @@ $(document).ready(function () {
         col = parseInt(tempIndex[1]);
         myString[row][col] = "*";
 
-        // because the tile is taken back to the rack
-        // skip it to make the displayString() works correctly
-        if (direction == leftRight) {
-          if (myString[row][col - 1] != "*") {
-            col--;
-          } else if (myString[row][col + 1] != "*") {
-            col++;
-          }
-        }
+        if (isAdjacent(row, col)) {
 
-        if (direction == upDown) {
-          if (myString[row + 1][col] != "*") {
-            row++;
-          } else if (myString[row - 1][col] != "*") {
-            row--;
+          if (ui.draggable.attr("data-index") == "8-8") {
+            if ($("img[data-status='on']").length > 1) {
+              ui.draggable.draggable("option", "revert", true);
+              printErrorMessages("Cannot take back the first tile when there are other tiles on the board.");
+              return;
+            }
           }
+
+          // console.log(myString)
+          $(this).css("box-shadow", "");
+
+          $(this).attr("data-status", "on");
+
+          // If the tile is space, take it back to the space image
+          var previousLetter = ui.draggable.attr("data-previous-letter");
+          if (previousLetter != null) {
+            ui.draggable.attr("src", "./images/Scrabble_Tile_Blank.jpg");
+            ui.draggable.attr("data-name", "Blank");
+          }
+
+          // Set position fit to the rack
+          ui.draggable.css({
+            position: 'relative',
+            top: 0,
+            left: 0
+          });
+
+          $("#tableBoard td[data-index='" + ui.draggable.attr("data-index") + "']").attr("data-status", "off");
+          $("#tableBoard td[data-index='" + ui.draggable.attr("data-index") + "']").removeAttr("data-name");
+
+          // because the tile is taken back to the rack
+          // skip it to make the displayString() works correctly
+          if (direction == leftRight) {
+            if (myString[row][col - 1] != "*") {
+              col--;
+            } else if (myString[row][col + 1] != "*") {
+              col++;
+            }
+          }
+
+          if (direction == upDown) {
+            if (myString[row + 1][col] != "*") {
+              row++;
+            } else if (myString[row - 1][col] != "*") {
+              row--;
+            }
+          }
+          var my_word = displayString(row, col);
+          $("#myString").text("Word: " + my_word);
+          $("#score").text("Score: " + score(row, col, my_word));
+
+          // Reset conditional variable (directions)
+          resetVariables();
+
+          ui.draggable.removeAttr("data-status");
+          ui.draggable.removeAttr("data-index");
+          ui.draggable.removeAttr("data-previous-letter");
+
+          $("#tableBoard td[data-status='off']").droppable('option', 'accept', "img");
+        } else {
+          // HERE TWO TILES ARE NOT ADJACENT       
+          ui.draggable.draggable("option", "revert", true); // Go back to the rack
+          myString[row][col] = ui.draggable.attr("data-name");
+          printErrorMessages("Do not allow space between two letters.");
+          //console.log(myString)
         }
-        var my_word = displayString(row, col);
-        $("#myString").text("Word: " + my_word);
-        $("#score").text("Score: " + score(row, col, my_word));
       }
-
-      // Reset conditional variable (directions)
-      resetVariables();
-
-      ui.draggable.removeAttr("data-status");
-      ui.draggable.removeAttr("data-index");
-      ui.draggable.removeAttr("data-previous-letter");
-
-      $("#tableBoard td[data-status='off']").droppable('option', 'accept', "img");
     },
 
     out: function (event, ui) {
@@ -1274,10 +1285,10 @@ $(document).ready(function () {
     var firstLetter = false;
     row = parseInt(row);
     col = parseInt(col);
-    //console.log(direction)
 
     if (direction == leftRight) {
-      if (myString[row][col - 1] != "*" || myString[row][col + 1] != "*") { // there are two letters
+      if ((myString[row][col - 1] != "*" && $("#tableBoard td[data-index='" + row + "-" + (col - 1) + "']").attr("data-save") == "on")
+        && (myString[row][col + 1] != "*") && $("#tableBoard td[data-index='" + row + "-" + (col + 1) + "']").attr("data-save") == "on") { // there are two letters
         return true;
       }
       for (var i = 0; i < myString.length - 1; i++) { // Skip * at begining
@@ -1292,10 +1303,10 @@ $(document).ready(function () {
         }
       }
       //console.log(myString);
-      //console.log(isAdjacent);
       return true;
     } else if (direction == upDown) {
-      if (myString[row + 1][col] != "*" || myString[row - 1][col] != "*") {
+      if ((myString[row + 1][col] != "*" && $("#tableBoard td[data-index='" + (row + 1) + "-" + col + "']").attr("data-save") == "on")
+        && (myString[row - 1][col] != "*") && $("#tableBoard td[data-index='" + (row - 1) + "-" + col + "']").attr("data-save") == "on") {
         return true;
       }
       for (var i = 0; i < myString.length - 1; i++) {
@@ -1309,8 +1320,7 @@ $(document).ready(function () {
           }
         }
       }
-      //console.log(myString);
-      //console.log(isAdjacent);
+      console.log(myString);
       return true;
     } else {
       return true; // first tile
