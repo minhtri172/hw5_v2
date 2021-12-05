@@ -1494,9 +1494,9 @@ $(document).ready(function () {
     var countBonus = 0; // if word has 7 letters, + 50
 
     //console.log(direction)
-    //findWord(row, col)
+    //findWord(my_word)
     //DEBUG
-    if (findWord(row, col)) {
+    if (findWord(my_word)) {
       isValidWord = true;
       if (direction == leftRight) { // left-right
         for (i = 0; i < 15; i++) {
