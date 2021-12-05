@@ -1165,6 +1165,13 @@ $(document).ready(function () {
           printErrorMessages("Do not allow space between two letters.");
           //console.log(myString)
         }
+      } else {
+        // Set position fit to the rack
+        ui.draggable.css({
+          position: 'relative',
+          top: 0,
+          left: 0
+        });
       }
     },
 
@@ -1290,7 +1297,7 @@ $(document).ready(function () {
     if (direction == leftRight) {
       var boardTDLeft = $("#tableBoard td[data-index='" + row + "-" + (col - 1) + "']");
       var boardTDRight = $("#tableBoard td[data-index='" + row + "-" + (col + 1) + "']");
-      
+
       if (boardTDLeft.attr("data-save") == "on" && boardTDRight.attr("data-save") == "on") { // there are two letters
         return true;
       }
