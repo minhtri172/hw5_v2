@@ -3,7 +3,7 @@
     GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
     Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
     Copyright (C) 2021 by Minh Le. 
-    Updated by ML on December 3, 2021 at 8:00pm
+    Updated by ML on December 4, 2021 at 11:00pm
 */
 
 $(document).ready(function () {
@@ -1095,7 +1095,7 @@ $(document).ready(function () {
         row = parseInt(tempIndex[0]);
         col = parseInt(tempIndex[1]);
         myString[row][col] = "*";
-
+        //console.log(myString)
         if (isAdjacent(row, col)) {
 
           if (ui.draggable.attr("data-index") == "8-8") {
@@ -1288,8 +1288,10 @@ $(document).ready(function () {
     col = parseInt(col);
 
     if (direction == leftRight) {
-      if ((myString[row][col - 1] != "*" && $("#tableBoard td[data-index='" + row + "-" + (col - 1) + "']").attr("data-save") == "on")
-        && (myString[row][col + 1] != "*") && $("#tableBoard td[data-index='" + row + "-" + (col + 1) + "']").attr("data-save") == "on") { // there are two letters
+      var boardTDLeft = $("#tableBoard td[data-index='" + row + "-" + (col - 1) + "']");
+      var boardTDRight = $("#tableBoard td[data-index='" + row + "-" + (col + 1) + "']");
+      
+      if (boardTDLeft.attr("data-save") == "on" && boardTDRight.attr("data-save") == "on") { // there are two letters
         return true;
       }
       for (var i = 0; i < myString.length - 1; i++) { // Skip * at begining
@@ -1306,8 +1308,9 @@ $(document).ready(function () {
       //console.log(myString);
       return true;
     } else if (direction == upDown) {
-      if ((myString[row + 1][col] != "*" && $("#tableBoard td[data-index='" + (row + 1) + "-" + col + "']").attr("data-save") == "on")
-        && (myString[row - 1][col] != "*") && $("#tableBoard td[data-index='" + (row - 1) + "-" + col + "']").attr("data-save") == "on") {
+      var boardTDUP = $("#tableBoard td[data-index='" + (row - 1) + "-" + col + "']");
+      var boardTDDown = $("#tableBoard td[data-index='" + (row + 1) + "-" + col + "']");
+      if (boardTDUP.attr("data-save") == "on" && boardTDDown.attr("data-save") == "on") {
         return true;
       }
       for (var i = 0; i < myString.length - 1; i++) {
@@ -1493,7 +1496,7 @@ $(document).ready(function () {
     //console.log(direction)
     //checkWords(row, col)
     //DEBUG
-    if (findWord(my_word)) {
+    if (true) {
       isValidWord = true;
       if (direction == leftRight) { // left-right
         for (i = 0; i < 15; i++) {
