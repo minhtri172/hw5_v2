@@ -105,7 +105,7 @@ $(document).ready(function () {
   // Reference from : https://johnresig.com/blog/dictionary-lookups-in-javascript/
   $.get("dict/dict.txt", function (file) {
     // Get words
-    var words = file.split("\n");
+    var words = file.split("\r\n");
     //console.log(words);
 
     // Create an boolean array to store words
@@ -1263,14 +1263,12 @@ $(document).ready(function () {
       direction = 0;
     }
 
-    if ($("#tableHolder td[data-status='off'").length == 1) { // There is a first tile on the board
+    if ($("#tableHolder td[data-status='off'").length == 1 &$ ("#tableBoard td[data-save='on']").length == 0) { // There is a first tile on the board
       saveCol = -1;
       saveRow = -1;
       acceptTile = false;
       changeDirection = true;
-      if ($("#tableBoard td[data-save='on']").length == 0) { // No save word on the board
-        direction = 0;
-      }
+      direction = 0;
     }
 
     if ($("#tableHolder td[data-status='on'").length == 7) { // All tiles on the board
