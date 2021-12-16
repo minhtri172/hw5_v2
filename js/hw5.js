@@ -3,7 +3,7 @@
     GUI Assigment: Implementing a Bit of Scrabble with Drag-and-Drop  - PART: Extra Credits
     Minh Le, Umass Lowell Computer Science, minhtri_le@student.uml.edu
     Copyright (C) 2021 by Minh Le. 
-    Updated by ML on December 4, 2021 at 11:00pm
+    Updated by ML on December 16, 2021 at 4:00pm
 */
 
 $(document).ready(function () {
@@ -105,7 +105,7 @@ $(document).ready(function () {
   // Reference from : https://johnresig.com/blog/dictionary-lookups-in-javascript/
   $.get("dict/dict.txt", function (file) {
     // Get words
-    var words = file.split("\r\n");
+    var words = file.split("\n");
     //console.log(words);
 
     // Create an boolean array to store words
