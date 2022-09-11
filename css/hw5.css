@@ -129,7 +129,7 @@
 #remain {
     display: grid;
     grid-template-columns: auto auto;
-    height: 516px;
+    height: 366px;
 }
 
 /* Config the remaining table */
